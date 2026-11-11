@@ -29,17 +29,24 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
+      - name: Pick wheel versions
+        run: |
+          mkdir -p ci-out
+          python3 ci/pick_wheels.py 3.11 arm64_v8a > wheels.txt 2> ci-out/wheels.txt || true
+          cat wheels.txt ci-out/wheels.txt
       - name: Build APK (arm64)
         id: build
         run: |
           set -o pipefail
-          gradle --no-daemon --stacktrace assembleDebug -Pabis=arm64-v8a -PbuildNumber=${{ github.run_number }} 2>&1 | tee build.log
+          gradle --no-daemon assembleDebug -Pabis=arm64-v8a -PbuildNumber=${{ github.run_number }} $(cat wheels.txt) 2>&1 | tee build.log
       - name: Collect
         if: always()
         run: |
           mkdir -p ci-out
-          tail -n 250 build.log > ci-out/build-log-tail.txt || true
-          grep -n -E "error:|^e: |FAILED|What went wrong|Could not|ERROR|No matching distribution|Chaquopy" build.log | head -n 150 > ci-out/errors.txt || true
+          cat wheels.txt >> ci-out/wheels.txt || true
+          head -n 150 build.log > ci-out/build-log-head.txt || true
+          tail -n 120 build.log > ci-out/build-log-tail.txt || true
+          grep -n -E "error:|^e: |warning:.*deprecat|FAILED|What went wrong|Could not|ERROR|No matching distribution|Chaquopy|Collecting|Downloading|Successfully" build.log | head -n 200 > ci-out/errors.txt || true
           APK=app/build/outputs/apk/debug/app-debug.apk
           if [ -f "$APK" ]; then
             cp "$APK" scan2svg.apk
@@ -82,7 +89,9 @@ jobs:
         id: build
         run: |
           set -o pipefail
-          gradle --no-daemon --stacktrace assembleDebug assembleDebugAndroidTest -Pabis=x86_64 2>&1 | tee build.log
+          mkdir -p ci-out
+          python3 ci/pick_wheels.py 3.11 x86_64 > wheels.txt 2> ci-out/wheels.txt || true
+          gradle --no-daemon assembleDebug assembleDebugAndroidTest -Pabis=x86_64 $(cat wheels.txt) 2>&1 | tee build.log
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -103,7 +112,8 @@ jobs:
         if: always()
         run: |
           mkdir -p ci-out
-          tail -n 150 build.log > ci-out/build-log-tail.txt || true
+          tail -n 120 build.log > ci-out/build-log-tail.txt || true
+          grep -n -E "error:|^e: |FAILED|What went wrong|Could not|ERROR|No matching distribution|Chaquopy|Collecting|Successfully" build.log | head -n 200 > ci-out/errors.txt || true
           echo "sha=$GITHUB_SHA run=$GITHUB_RUN_NUMBER build=${{ steps.build.outcome }} emulator=${{ steps.emu.outcome }}" > ci-out/status.txt
       - name: Push results branch
         if: always()

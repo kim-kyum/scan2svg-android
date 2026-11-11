@@ -601,11 +601,18 @@ class Face:
         key = round(float(size), 2)
         f = self._cache.get(key)
         if f is None:
-            f = ImageFont.truetype(self.path, key, index=self.index,
-                                   layout_engine=ImageFont.Layout.RAQM if RAQM else ImageFont.Layout.BASIC)
+            lay = getattr(ImageFont, "Layout", None)  # Pillow 9.1 이전에는 상수 이름이 달랐다
+            eng = (lay.RAQM if RAQM else lay.BASIC) if lay else (ImageFont.LAYOUT_RAQM if RAQM else ImageFont.LAYOUT_BASIC)
+            try:
+                f = ImageFont.truetype(self.path, key, index=self.index, layout_engine=eng)
+            except TypeError:  # Pillow 10.1 이전에는 글자 크기가 정수여야 했다 → 가장 가까운 정수 크기로 그린다
+                f = ImageFont.truetype(self.path, max(1, int(round(key))), index=self.index, layout_engine=eng)
             if self.var:
-                f.set_variation_by_axes(self.var)
-            f.face, f.px = self, key
+                try:
+                    f.set_variation_by_axes(self.var)
+                except Exception:  # 가변 글꼴을 못 다루는 FreeType: 기본 굵기로 그려진다
+                    pass
+            f.face, f.px = self, key  # px: 조판에 쓰는 크기(소수 포함)
             if len(self._cache) > 9:
                 self._cache.pop(next(k for k in self._cache if k not in (float(REF), float(REF_S), 1000.0)))
             self._cache[key] = f

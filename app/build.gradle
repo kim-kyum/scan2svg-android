@@ -46,13 +46,19 @@ android {
     packagingOptions { resources { excludes += ['META-INF/DEPENDENCIES', 'META-INF/LICENSE*', 'META-INF/NOTICE*'] } }
 }
 
+// 네이티브 패키지는 Chaquopy 저장소에 올라온 안드로이드용 휠만 쓸 수 있으므로 버전을 맞춰 줘야 한다.
+// CI에서는 ci/pick_wheels.py가 실제 목록을 보고 골라 -P로 넘긴다.
+def pin = { String name, String prop, String fallback ->
+    name + "==" + (project.findProperty(prop) ?: fallback)
+}
+
 chaquopy {
     defaultConfig {
         version "3.11"
         pip {
-            install "numpy"
-            install "opencv-python"
-            install "pillow"
+            install pin("numpy", "numpyVersion", "1.26.2")
+            install pin("opencv-python", "opencvVersion", "4.8.1.78")
+            install pin("pillow", "pillowVersion", "9.2.0")
             install "fonttools"
         }
     }
