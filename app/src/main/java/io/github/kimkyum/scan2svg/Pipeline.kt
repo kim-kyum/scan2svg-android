@@ -40,11 +40,19 @@ object Pipeline {
     /** 앱에 함께 넣은 글꼴(assets/fonts)을 파일로 풀어 둔 폴더. 파이썬은 파일 경로로만 글꼴을 읽을 수 있다. */
     fun bundledFontDir(ctx: Context): File {
         val dir = File(ctx.filesDir, "bundled_fonts").apply { mkdirs() }
-        for (name in ctx.assets.list("fonts") ?: emptyArray()) {
-            val f = File(dir, name)
-            if (!f.exists() || f.length() == 0L) {
-                ctx.assets.open("fonts/$name").use { i -> f.outputStream().use { i.copyTo(it) } }
+        // 앱이 갱신되면 들어 있는 글꼴도 바뀔 수 있으므로 통째로 다시 푼다.
+        val stamp = File(dir, ".stamp")
+        val version = try {
+            ctx.packageManager.getPackageInfo(ctx.packageName, 0).lastUpdateTime.toString()
+        } catch (e: Exception) {
+            "0"
+        }
+        if (!stamp.exists() || stamp.readText() != version) {
+            dir.listFiles()?.forEach { it.delete() }
+            for (name in ctx.assets.list("fonts") ?: emptyArray()) {
+                ctx.assets.open("fonts/$name").use { i -> File(dir, name).outputStream().use { i.copyTo(it) } }
             }
+            stamp.writeText(version)
         }
         return dir
     }
@@ -53,6 +61,14 @@ object Pipeline {
 
     fun versions(ctx: Context): String =
         python(ctx).getModule("android_main").callAttr("versions").toString()
+
+    /** 검사용: 글꼴 표본 그림을 out 폴더에 만들고 글꼴별 메모를 돌려준다. */
+    fun fontProbe(ctx: Context, extraDirs: List<File>): String =
+        python(ctx).getModule("android_main").callAttr(
+            "font_probe",
+            outDir(ctx).absolutePath,
+            (listOf(bundledFontDir(ctx)) + extraDirs).map { it.absolutePath }.toTypedArray(),
+        ).toString()
 
     /** 오래 걸린다(수십 초). 반드시 백그라운드 스레드에서 부른다. */
     fun run(ctx: Context, input: File, onLog: (String) -> Unit): Result {
