@@ -9,3 +9,4 @@ captures/
 test-out/
 __pycache__/
 *.pyc
+app/src/main/assets/fonts/

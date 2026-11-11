@@ -37,6 +37,18 @@ object Pipeline {
     /** 글꼴을 찾을 폴더: 사용자가 앱에 추가한 글꼴(시스템 글꼴 폴더는 파이썬 쪽에서 알아서 본다). */
     fun userFontDir(ctx: Context): File = File(ctx.filesDir, "fonts").apply { mkdirs() }
 
+    /** 앱에 함께 넣은 글꼴(assets/fonts)을 파일로 풀어 둔 폴더. 파이썬은 파일 경로로만 글꼴을 읽을 수 있다. */
+    fun bundledFontDir(ctx: Context): File {
+        val dir = File(ctx.filesDir, "bundled_fonts").apply { mkdirs() }
+        for (name in ctx.assets.list("fonts") ?: emptyArray()) {
+            val f = File(dir, name)
+            if (!f.exists() || f.length() == 0L) {
+                ctx.assets.open("fonts/$name").use { i -> f.outputStream().use { i.copyTo(it) } }
+            }
+        }
+        return dir
+    }
+
     fun outDir(ctx: Context): File = File(ctx.getExternalFilesDir(null) ?: ctx.filesDir, "out").apply { mkdirs() }
 
     fun versions(ctx: Context): String =
@@ -54,7 +66,7 @@ object Pipeline {
                 "run",
                 input.absolutePath,
                 out.absolutePath,
-                arrayOf(userFontDir(ctx).absolutePath),
+                arrayOf(userFontDir(ctx).absolutePath, bundledFontDir(ctx).absolutePath),
                 cache.absolutePath,
                 Bridge(onLog),
             ).toString()
