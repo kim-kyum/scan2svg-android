@@ -1,0 +1,12 @@
+25:Chaquopy: Installing for x86_64
+27:Collecting numpy==1.26.2
+29:Collecting opencv-python==4.5.1.48
+31:Collecting pillow==11.0.0
+33:Collecting fonttools
+35:Collecting chaquopy-openblas>=0.2.20
+37:Collecting chaquopy-libcxx>=11000
+39:Collecting chaquopy-libjpeg>=1.5.3
+41:Collecting chaquopy-libgfortran>=4.9
+43:Collecting chaquopy-libpng>=1.6.34
+45:Collecting chaquopy-freetype>=2.9.1
+48:Successfully installed chaquopy-freetype-2.9.1 chaquopy-libcxx-180000 chaquopy-libgfortran-4.9 chaquopy-libjpeg-1.5.3 chaquopy-libpng-1.6.34 chaquopy-openblas-0.2.20 fonttools-4.65.0 numpy-1.26.2 opencv-python-4.5.1.48 pillow-11.0.0

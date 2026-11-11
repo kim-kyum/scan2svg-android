@@ -1,0 +1,27 @@
+numpy cp38: 1.17.4[arm64_v8a/armeabi_v7a/x86/x86_64], 1.19.5[arm64_v8a/armeabi_v7a/x86/x86_64]
+numpy cp39: 1.20.3[arm64_v8a/armeabi_v7a/x86/x86_64], 1.23.3[arm64_v8a/armeabi_v7a/x86/x86_64], 1.26.2[arm64_v8a/armeabi_v7a/x86/x86_64]
+numpy cp310: 1.23.3[arm64_v8a/armeabi_v7a/x86/x86_64], 1.26.2[arm64_v8a/armeabi_v7a/x86/x86_64]
+numpy cp311: 1.23.3[arm64_v8a/armeabi_v7a/x86/x86_64], 1.26.2[arm64_v8a/armeabi_v7a/x86/x86_64]
+numpy cp312: 1.26.2[arm64_v8a/x86_64]
+numpy cp313: 1.26.2[arm64_v8a/x86_64]
+pillow cp38: 7.0.0[arm64_v8a/armeabi_v7a/x86/x86_64], 7.1.1[arm64_v8a/armeabi_v7a/x86/x86_64], 7.1.2[arm64_v8a/armeabi_v7a/x86/x86_64], 8.4.0[arm64_v8a/armeabi_v7a/x86/x86_64], 9.2.0[arm64_v8a/armeabi_v7a/x86/x86_64]
+pillow cp39: 9.2.0[arm64_v8a/armeabi_v7a/x86/x86_64], 11.0.0[arm64_v8a/armeabi_v7a/x86/x86_64]
+pillow cp310: 9.2.0[arm64_v8a/armeabi_v7a/x86/x86_64], 11.0.0[arm64_v8a/armeabi_v7a/x86/x86_64]
+pillow cp311: 9.2.0[arm64_v8a/armeabi_v7a/x86/x86_64], 11.0.0[arm64_v8a/armeabi_v7a/x86/x86_64]
+pillow cp312: 10.1.0[arm64_v8a/x86_64], 11.0.0[arm64_v8a/x86_64]
+pillow cp313: 11.0.0[arm64_v8a/x86_64]
+opencv-python cp38: 4.1.2.30[arm64_v8a/armeabi_v7a/x86/x86_64], 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-python cp310: 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-python-headless cp38: 4.1.2.30[arm64_v8a/armeabi_v7a/x86/x86_64], 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-python-headless cp310: 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-contrib-python cp38: 3.4.2.16[arm64_v8a/armeabi_v7a/x86/x86_64], 4.1.2.30[arm64_v8a/armeabi_v7a/x86/x86_64], 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-contrib-python cp310: 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-contrib-python-headless cp38: 4.1.2.30[arm64_v8a/armeabi_v7a/x86/x86_64], 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+opencv-contrib-python-headless cp310: 4.5.1.48[arm64_v8a/armeabi_v7a/x86/x86_64]
+파이썬 3.12: numpy=['1.26.2'] pillow=['10.1.0', '11.0.0'] opencv=None
+파이썬 3.11: numpy=['1.23.3', '1.26.2'] pillow=['9.2.0', '11.0.0'] opencv=None
+파이썬 3.10: numpy=['1.23.3', '1.26.2'] pillow=['9.2.0', '11.0.0'] opencv=('opencv-python', ['4.5.1.48'])
+파이썬 3.9: numpy=['1.20.3', '1.23.3', '1.26.2'] pillow=['9.2.0', '11.0.0'] opencv=None
+파이썬 3.8: numpy=['1.17.4', '1.19.5'] pillow=['7.1.2', '8.4.0', '9.2.0'] opencv=('opencv-python', ['4.1.2.30', '4.5.1.48'])
+파이썬 3.13: numpy=['1.26.2'] pillow=['11.0.0'] opencv=None
+선택: 파이썬 3.10, numpy 1.26.2, opencv-python 4.5.1.48, pillow 11.0.0

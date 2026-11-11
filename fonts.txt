@@ -1,0 +1,28 @@
+ok   NotoSansKR-VF.ttf 10414588 bytes
+ok   NotoSerifKR-VF.ttf 23795420 bytes
+ok   OFL-NotoSansKR.txt 4388 bytes
+ok   OFL-NotoSerifKR.txt 4350 bytes
+NotoSansKR-VF.ttf: 글자 23174 → 13095자, 10414588 → 5200944 bytes
+ok   NotoSansKR-Light.ttf 3080120 bytes
+ok   NotoSansKR-Medium.ttf 3075704 bytes
+ok   NotoSansKR-Bold.ttf 3076452 bytes
+ok   NotoSansKR-Black.ttf 3077236 bytes
+NotoSerifKR-VF.ttf: 글자 23124 → 13095자, 23795420 → 16448656 bytes
+ok   NotoSerifKR-Medium.ttf 9749064 bytes
+ok   NotoSerifKR-Bold.ttf 9745804 bytes
+ok   NotoSerifKR-Black.ttf 9739036 bytes
+app/src/androidTest/assets/probe_fonts:
+total 10172
+-rw-r--r-- 1 runner runner 10414588 Nov 11 23:52 NotoSansKR-VF.ttf
+
+app/src/main/assets/fonts:
+total 40600
+-rw-r--r-- 1 runner runner 3077236 Nov 11 23:51 NotoSansKR-Black.ttf
+-rw-r--r-- 1 runner runner 3076452 Nov 11 23:50 NotoSansKR-Bold.ttf
+-rw-r--r-- 1 runner runner 3080120 Nov 11 23:50 NotoSansKR-Light.ttf
+-rw-r--r-- 1 runner runner 3075704 Nov 11 23:50 NotoSansKR-Medium.ttf
+-rw-r--r-- 1 runner runner 9739036 Nov 11 23:52 NotoSerifKR-Black.ttf
+-rw-r--r-- 1 runner runner 9745804 Nov 11 23:51 NotoSerifKR-Bold.ttf
+-rw-r--r-- 1 runner runner 9749064 Nov 11 23:51 NotoSerifKR-Medium.ttf
+-rw-r--r-- 1 runner runner    4388 Nov 11 23:52 OFL-NotoSansKR.txt
+-rw-r--r-- 1 runner runner    4350 Nov 11 23:52 OFL-NotoSerifKR.txt

@@ -1,0 +1,36 @@
+versions: {"opencv": "4.5.1", "numpy": "1.26.2", "pillow": "11.0.0", "raqm": false, "freetype": "2.9.1"}
+font probe:
+Noto Sans KR / Black / 900 / NotoSansKR-Black.ttf: 폭 559.1px, 요=0.920 A=0.660 먹 10399
+Noto Sans KR / Bold / 700 / NotoSansKR-Bold.ttf: 폭 553.0px, 요=0.920 A=0.641 먹 8814
+Noto Sans KR / Light / 300 / NotoSansKR-Light.ttf: 폭 535.4px, 요=0.920 A=0.588 먹 3785
+Noto Sans KR / Medium / 500 / NotoSansKR-Medium.ttf: 폭 546.6px, 요=0.920 A=0.622 먹 7038
+Noto Serif KR / Black / 900 / NotoSerifKR-Black.ttf: 폭 587.0px, 요=0.966 A=0.761 먹 7953
+Noto Serif KR / Bold / 700 / NotoSerifKR-Bold.ttf: 폭 581.8px, 요=0.966 A=0.746 먹 6870
+Noto Serif KR / Medium / 500 / NotoSerifKR-Medium.ttf: 폭 574.8px, 요=0.966 A=0.726 먹 5231
+Noto Sans KR / Thin / 100 / NotoSansKR-VF.ttf var=[100.0]: 폭 531.0px, 요=0.920 A=0.574 먹 2460 axes=[(100, 100, 900)]
+Noto Sans KR / ExtraLight / 200 / NotoSansKR-VF.ttf var=[200.0]: 폭 533.3px, 요=0.920 A=0.581 먹 3130 axes=[(100, 100, 900)]
+Noto Sans KR / Light / 300 / NotoSansKR-VF.ttf var=[300.0]: 폭 535.5px, 요=0.920 A=0.588 먹 3799 axes=[(100, 100, 900)]
+Noto Sans KR / Regular / 400 / NotoSansKR-VF.ttf var=[400.0]: 폭 542.0px, 요=0.920 A=0.608 먹 5675 axes=[(100, 100, 900)]
+Noto Sans KR / Medium / 500 / NotoSansKR-VF.ttf var=[500.0]: 폭 546.7px, 요=0.920 A=0.622 먹 7035 axes=[(100, 100, 900)]
+Noto Sans KR / SemiBold / 600 / NotoSansKR-VF.ttf var=[600.0]: 폭 549.8px, 요=0.920 A=0.632 먹 7890 axes=[(100, 100, 900)]
+Noto Sans KR / Bold / 700 / NotoSansKR-VF.ttf var=[700.0]: 폭 552.9px, 요=0.920 A=0.641 먹 8736 axes=[(100, 100, 900)]
+Noto Sans KR / ExtraBold / 800 / NotoSansKR-VF.ttf var=[800.0]: 폭 556.0px, 요=0.920 A=0.651 먹 9567 axes=[(100, 100, 900)]
+Noto Sans KR / Black / 900 / NotoSansKR-VF.ttf var=[900.0]: 폭 559.1px, 요=0.920 A=0.660 먹 10386 axes=[(100, 100, 900)]
+Roboto / Regular / 400 / DroidSans-Bold.ttf var=[400.0, 100.0, 0.0]: 폭 387.8px, 요=0.443 A=0.652 먹 3713 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Bold / 700 / DroidSans-Bold.ttf var=[700.0, 100.0, 0.0]: 폭 391.1px, 요=0.443 A=0.672 먹 4657 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Italic / 400 / DroidSans-Bold.ttf var=[400.0, 100.0, 1.0]: 폭 383.2px, 요=0.448 A=0.633 먹 3689 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Bold Italic / 700 / DroidSans-Bold.ttf var=[700.0, 100.0, 1.0]: 폭 386.4px, 요=0.448 A=0.652 먹 4606 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Condensed Regular / 400 / DroidSans-Bold.ttf var=[400.0, 75.0, 0.0]: 폭 344.1px, 요=0.392 A=0.577 먹 3308 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Condensed Bold / 700 / DroidSans-Bold.ttf var=[700.0, 75.0, 0.0]: 폭 347.6px, 요=0.392 A=0.597 먹 4219 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Condensed Italic / 400 / DroidSans-Bold.ttf var=[400.0, 75.0, 1.0]: 폭 340.4px, 요=0.397 A=0.560 먹 3280 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+Roboto / Condensed Bold Italic / 700 / DroidSans-Bold.ttf var=[700.0, 75.0, 1.0]: 폭 343.8px, 요=0.397 A=0.579 먹 4185 axes=[(100, 400, 900), (75, 100, 100), (0, 0, 1)]
+[1] 용지 검출 → 1697x2400px
+    (Pillow에 Raqm 조판 기능이 없어 단순 조판으로 진행합니다: 커닝·합자 없이 글자를 놓습니다)
+[2] 팔레트 7색: #fef2a4 #fedc5f #de493c #80b7ec #000000 #29458e #5e5a44 / 사진 영역 1곳
+[3] 글자 줄 후보 19개 → 첫 OCR로 읽힌 줄 18개
+[4] 글꼴 대입: 줄 18개 × 후보 글꼴 80개 = 1440쌍 중, 작게 그려 훑기 316회(전체 글꼴과 견준 줄은 8개) + 제 크기 정밀 비교 126쌍 (7.4s)
+    다시 읽기: 미심쩍은 4줄을 다른 설정으로 재인식 → 1줄 교체 (52.6s)
+    글자로 확정 17/19줄
+[5] 기본 도형 {'rect': 1, 'ellipse': 5, 'line': 5, 'rect(선)': 2, 'ellipse(선)': 5} / 일러스트 묶음 6개(경로 39개) / 이미지 1개
+[6] /storage/emulated/0/Android/data/io.github.kimkyum.scan2svg/files/out/result.svg 저장 — 평균 차이 2.29/255, 크게 다른 픽셀 0.317% (총 86.69s)
+OK

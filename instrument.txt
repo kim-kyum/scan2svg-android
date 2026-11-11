@@ -1,0 +1,8 @@
+
+io.github.kimkyum.scan2svg.PipelineTest:.
+
+Time: 102.89
+
+OK (1 test)
+
+
