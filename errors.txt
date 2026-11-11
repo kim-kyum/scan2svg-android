@@ -1,0 +1,22 @@
+25:Chaquopy: Installing for arm64-v8a
+27:Collecting numpy==1.26.2
+28:  Downloading https://chaquo.com/pypi-13.1/numpy/numpy-1.26.2-0-cp310-cp310-android_21_arm64_v8a.whl (5.0 MB)
+29:Collecting opencv-python==4.5.1.48
+30:  Downloading https://chaquo.com/pypi-13.1/opencv-python/opencv_python-4.5.1.48-2-cp310-cp310-android_24_arm64_v8a.whl (9.0 MB)
+31:Collecting pillow==11.0.0
+32:  Downloading https://chaquo.com/pypi-13.1/pillow/pillow-11.0.0-0-cp310-cp310-android_24_arm64_v8a.whl (582 kB)
+33:Collecting fonttools
+34:  Downloading fonttools-4.65.0-py3-none-any.whl (1.2 MB)
+35:Collecting chaquopy-libcxx>=11000
+36:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libcxx/chaquopy_libcxx-180000-0-py3-none-android_24_arm64_v8a.whl (413 kB)
+37:Collecting chaquopy-openblas>=0.2.20
+38:  Downloading https://chaquo.com/pypi-13.1/chaquopy-openblas/chaquopy_openblas-0.2.20-5-py3-none-android_21_arm64_v8a.whl (4.3 MB)
+39:Collecting chaquopy-libjpeg>=1.5.3
+40:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libjpeg/chaquopy_libjpeg-1.5.3-1-py3-none-android_21_arm64_v8a.whl (176 kB)
+41:Collecting chaquopy-libpng>=1.6.34
+42:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libpng/chaquopy_libpng-1.6.34-1-py3-none-android_21_arm64_v8a.whl (175 kB)
+43:Collecting chaquopy-libgfortran>=4.9
+44:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libgfortran/chaquopy_libgfortran-4.9-0-py3-none-android_21_arm64_v8a.whl (495 kB)
+45:Collecting chaquopy-freetype>=2.9.1
+46:  Downloading https://chaquo.com/pypi-13.1/chaquopy-freetype/chaquopy_freetype-2.9.1-2-py3-none-android_21_arm64_v8a.whl (533 kB)
+48:Successfully installed chaquopy-freetype-2.9.1 chaquopy-libcxx-180000 chaquopy-libgfortran-4.9 chaquopy-libjpeg-1.5.3 chaquopy-libpng-1.6.34 chaquopy-openblas-0.2.20 fonttools-4.65.0 numpy-1.26.2 opencv-python-4.5.1.48 pillow-11.0.0
