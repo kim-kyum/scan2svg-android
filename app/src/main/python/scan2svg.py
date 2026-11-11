@@ -578,21 +578,47 @@ def label_components(labels, n_labels, min_area):
 class Face:
     def __init__(self, d):
         self.__dict__.update(d)
-        self._cache, self._cmap, self._adv = {}, None, {}
+        self._cache, self._cmap, self._adv, self._gs = {}, None, {}, None
 
     def adv(self, ch):
         """글자 하나의 폭(em 단위, 반올림 없는 값). 아주 크게 놓고 재서 픽셀 반올림 오차를 없앤다."""
         a = self._adv.get(ch)
         if a is None:
-            a = self._adv[ch] = self.pil(1000.0).getlength(ch) / 1000.0
+            a = self._var_adv(ch) if self.var else None
+            if a is None:
+                a = self.pil(1000.0).getlength(ch) / 1000.0
+            self._adv[ch] = a
         return a
+
+    def _var_adv(self, ch):
+        """가변 글꼴의 글자 폭은 글꼴 파일의 표에서 직접 계산한다.
+        옛 FreeType(안드로이드용 Pillow의 2.9.1)은 일부 가변 글꼴의 폭을 0에 가깝게 돌려줘서 글자가 한자리에 겹친다."""
+        if self._gs is None:
+            try:
+                from fontTools.ttLib import TTFont
+                tt = TTFont(self.path, fontNumber=self.index, lazy=True)
+                axes = [a.axisTag for a in tt["fvar"].axes]
+                self._gs = (tt.getGlyphSet(location=dict(zip(axes, self.var))), tt.getBestCmap(), float(tt["head"].unitsPerEm), tt)
+            except Exception:
+                self._gs = False
+        if not self._gs:
+            return None
+        try:
+            name = self._gs[1].get(ord(ch))
+            return float(self._gs[0][name].width) / self._gs[2] if name else None
+        except Exception:
+            return None
 
     def supports(self, ch):
         """이 글꼴에 그 글자가 들어 있는가."""
         if self._cmap is None:
             from fontTools.ttLib import TTFont
             try:
-                self._cmap = set(TTFont(self.path, fontNumber=self.index, lazy=True).getBestCmap())
+                tt = TTFont(self.path, fontNumber=self.index, lazy=True)
+                try:
+                    self._cmap = set(tt.getBestCmap())
+                finally:
+                    tt.close()
             except Exception:
                 self._cmap = set()
         return ord(ch) in self._cmap
@@ -652,30 +678,43 @@ def _name(tt, ids):
 def _scan_font_file(path):
     from fontTools.ttLib import TTCollection, TTFont
     out = []
-    n = len(TTCollection(path, lazy=True).fonts) if path.lower().endswith((".ttc", ".otc")) else 1
+    n = 1
+    if path.lower().endswith((".ttc", ".otc")):
+        col = TTCollection(path, lazy=True)
+        n = len(col.fonts)
+        col.close()
     for i in range(n):
         tt = TTFont(path, fontNumber=i, lazy=True)
-        cmap = tt.getBestCmap() or {}
-        scripts = [s for s, probe in (("latin", "AaZz09"), ("hangul", "가한힣"), ("kana", "あア"), ("han", "漢字"))
-                   if all(ord(ch) in cmap for ch in probe)]
-        if not scripts:
-            continue
-        os2 = tt["OS/2"] if "OS/2" in tt else None
-        base = dict(path=path, index=i, family=_name(tt, (16, 1)), style=_name(tt, (17, 2)),
-                    weight=int(os2.usWeightClass) if os2 else 400,
-                    italic=bool(os2 and os2.fsSelection & 1) or bool(tt["post"].italicAngle),
-                    psname=_name(tt, (6,)), scripts=scripts, var=None)
-        if "fvar" in tt:  # 가변 글꼴: 이름 붙은 인스턴스마다 후보로
-            axes = [a.axisTag for a in tt["fvar"].axes]
-            for inst in tt["fvar"].instances:
-                d = dict(base)
-                d["style"] = tt["name"].getDebugName(inst.subfamilyNameID) or base["style"]
-                d["var"] = [float(inst.coordinates[a]) for a in axes]
-                if "wght" in inst.coordinates:
-                    d["weight"] = int(round(inst.coordinates["wght"]))
-                out.append(d)
-        else:
-            out.append(base)
+        try:
+            out += _scan_face(tt, path, i)
+        finally:
+            tt.close()
+    return out
+
+
+def _scan_face(tt, path, i):
+    out = []
+    cmap = tt.getBestCmap() or {}
+    scripts = [s for s, probe in (("latin", "AaZz09"), ("hangul", "가한힣"), ("kana", "あア"), ("han", "漢字"))
+               if all(ord(ch) in cmap for ch in probe)]
+    if not scripts:
+        return out
+    os2 = tt["OS/2"] if "OS/2" in tt else None
+    base = dict(path=path, index=i, family=_name(tt, (16, 1)), style=_name(tt, (17, 2)),
+                weight=int(os2.usWeightClass) if os2 else 400,
+                italic=bool(os2 and os2.fsSelection & 1) or bool(tt["post"].italicAngle),
+                psname=_name(tt, (6,)), scripts=scripts, var=None)
+    if "fvar" in tt:  # 가변 글꼴: 이름 붙은 인스턴스마다 후보로
+        axes = [a.axisTag for a in tt["fvar"].axes]
+        for inst in tt["fvar"].instances:
+            d = dict(base)
+            d["style"] = tt["name"].getDebugName(inst.subfamilyNameID) or base["style"]
+            d["var"] = [float(inst.coordinates[a]) for a in axes]
+            if "wght" in inst.coordinates:
+                d["weight"] = int(round(inst.coordinates["wght"]))
+            out.append(d)
+    else:
+        out.append(base)
     return out
 
 
@@ -683,7 +722,8 @@ def load_fonts(dirs, cache_path=None):
     """글꼴 폴더를 훑어 후보 목록을 만든다(글꼴 파일별 결과는 캐시)."""
     cache_path = cache_path or os.path.join(CACHE_DIR or os.path.join(os.path.expanduser("~"), ".cache", "scan2svg"), "fonts.json")
     try:
-        cache = json.load(open(cache_path, encoding="utf-8"))
+        with open(cache_path, encoding="utf-8") as fh:
+            cache = json.load(fh)
     except Exception:
         cache = {}
     faces, dirty = [], False
@@ -706,7 +746,8 @@ def load_fonts(dirs, cache_path=None):
     if dirty:
         try:
             os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-            json.dump(cache, open(cache_path, "w", encoding="utf-8"), ensure_ascii=False)
+            with open(cache_path, "w", encoding="utf-8") as fh:
+                json.dump(cache, fh, ensure_ascii=False)
         except Exception:
             pass
     seen, out = set(), []
@@ -1284,12 +1325,14 @@ class LineFit:
 
 
 REGION = {"hangul": " KR", "kana": " JP"}
+DOC_REGION = None  # 문서에 한글(또는 가나)이 있으면 그 지역판. 로마자만 있는 줄의 동점 처리에 쓴다
 
 
 def prune_regional(cands, need):
     """한글(또는 가나)만 쓰는 줄에서는 같은 글꼴 모음(.ttc) 안의 다른 지역판(JP/SC/TC/HK)이 똑같이 그려진다.
-    해당 언어판만 남겨 비교 횟수를 줄인다."""
-    tag = next((REGION[s] for s in ("hangul", "kana") if s in need), None)
+    해당 언어판만 남겨 비교 횟수를 줄인다. 로마자·숫자만 있는 줄도 지역판끼리 똑같이 그려지므로 문서의 언어판을 따른다
+    (그러지 않으면 한국어 문서의 영문 줄에 '… CJK TC' 같은 엉뚱한 지역판 이름이 붙는다)."""
+    tag = next((REGION[s] for s in ("hangul", "kana") if s in need), None) or DOC_REGION
     if not tag or "han" in need:
         return cands
     keep_keys = {(fc.path, fc.weight, "Mono" in fc.family) for fc in cands if tag in fc.family + " "}
@@ -1409,8 +1452,11 @@ def match_fonts(fits, faces, stats, blur=None):
     2) 거기서 추린 소수 후보만 나머지 줄에 정밀 대입. 점수가 낮은 줄만 전체 비교로 되돌아감
     3) 같은 묶음 안에서는 가능한 한 같은 글꼴로 합의
     """
+    global DOC_REGION
     t0 = time.time()
     need = [scripts_of(f.text) for f in fits]
+    seen_scripts = set().union(*need) if need else set()
+    DOC_REGION = next((REGION[s] for s in ("hangul", "kana") if s in seen_scripts), None)
     script = [tuple(sorted(n - {"latin"})) or ("latin",) for n in need]  # 숫자·영문이 섞인 한글 줄도 한글 줄로 본다
     ink = [getattr(f, "ink_label", 0) for f in fits]
     order = sorted(range(len(fits)), key=lambda i: (script[i], ink[i], fits[i].H))
