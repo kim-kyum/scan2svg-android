@@ -54,10 +54,10 @@ def pin = { String name, String prop, String fallback ->
 
 chaquopy {
     defaultConfig {
-        version "3.11"
+        version((project.findProperty("pythonVersion") ?: "3.10").toString())
         pip {
-            install pin("numpy", "numpyVersion", "1.26.2")
-            install pin("opencv-python", "opencvVersion", "4.8.1.78")
+            install pin("numpy", "numpyVersion", "1.23.3")
+            install pin((project.findProperty("opencvPackage") ?: "opencv-python").toString(), "opencvVersion", "4.5.1.48")
             install pin("pillow", "pillowVersion", "9.2.0")
             install "fonttools"
         }
