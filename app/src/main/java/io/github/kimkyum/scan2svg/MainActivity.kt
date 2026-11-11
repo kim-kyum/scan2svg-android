@@ -214,7 +214,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateFontInfo() {
         val n = Pipeline.userFontDir(this).listFiles()?.size ?: 0
-        fontInfo.text = "기기 글꼴 + 추가한 글꼴 ${n}개 중에서 찾습니다"
+        fontInfo.text = "글꼴은 기기 글꼴, 앱에 든 Noto Sans KR·Noto Serif KR(굵기별), 추가한 글꼴 ${n}개 중에서 찾습니다"
     }
 
     private fun setBusy(b: Boolean) {
