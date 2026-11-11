@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">scan2svg</string>
+    <string name="intro">문서 사진을 편집 가능한 SVG로 바꿉니다. 글자는 글자로, 상자·선은 도형으로, 그림은 곡선으로 다시 그립니다. 모든 처리는 기기 안에서 합니다.</string>
+    <string name="pick">사진 고르기</string>
+    <string name="camera">사진 찍기</string>
+    <string name="sample">예시로 해보기</string>
+    <string name="add_fonts">글꼴 추가</string>
+    <string name="save">SVG 저장</string>
+    <string name="share">공유</string>
+    <string name="open">다른 앱으로 열기</string>
+    <string name="ready">사진을 고르거나 찍어 주세요.</string>
+    <string name="working">변환 중… (보통 20초~1분, 처음 한 번은 글꼴을 훑느라 더 걸립니다)</string>
+    <string name="preview_desc">왼쪽부터 원본(편 것) · 재구성 · 차이</string>
+</resources>
