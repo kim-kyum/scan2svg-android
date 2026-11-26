@@ -60,6 +60,20 @@ class PipelineTest {
             File(page.dir(doc), it).takeIf { f -> f.exists() }?.copyTo(File(out, it), overwrite = true)
         }
 
+        // 1-2) 수학 문제지(모눈·수식·작은 글자, 밝은 책상) — 실기기에서 실패했던 종류
+        val ws = Store.addPage(doc, File(ctx.cacheDir, "ws.jpg").also { f ->
+            inst.context.assets.open("worksheet.jpg").use { i -> f.outputStream().use { i.copyTo(it) } }
+        })
+        val tw = SystemClock.elapsedRealtime()
+        val rw = Pipeline.runPage(ctx, ws.src(doc), ws.dir(doc)) { note("ws " + it) }
+        note("worksheet ${(SystemClock.elapsedRealtime() - tw) / 1000.0}s ok=${rw.optBoolean("ok")} " +
+            "total=${rw.optJSONObject("stats")?.optDouble("total_sec")} counts=${rw.optJSONObject("stats")?.optJSONObject("counts")}")
+        listOf("result_compare.jpg", "page.pdf", "result_report.json").forEach {
+            File(ws.dir(doc), it).takeIf { f -> f.exists() }?.copyTo(File(out, "ws_$it"), overwrite = true)
+        }
+        doc.pages.remove(ws)
+        Store.save(doc)
+
         // 2) 같은 쪽을 하나 더(스캔 바탕)로 복제하고 필기를 넣어 2쪽 PDF로 내보내기
         val page2 = Page(Store.newId(), Page.STATUS_DONE, Page.BG_SCAN, "", page.widthPx, page.heightPx)
         page.dir(doc).copyRecursively(page2.dir(doc), overwrite = true)

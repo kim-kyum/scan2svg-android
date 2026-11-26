@@ -106,7 +106,11 @@ class DocActivity : Activity(), Engine.Listener, PageView.Callback {
 
         // 윗줄: 제목, 보기, 도구
         val bar = Ui.row(ctx).apply { setPadding(Ui.dpi(ctx, 6), Ui.dpi(ctx, 6), Ui.dpi(ctx, 6), Ui.dpi(ctx, 6)) }
-        fun add(v: View, gapAfter: Int = 4) = bar.addView(v, Ui.lp().apply { marginEnd = Ui.dpi(ctx, gapAfter) })
+        fun add(v: View, gapAfter: Int = 4) {
+            // 구분선처럼 크기를 정해 둔 뷰는 그 크기를 지킨다(wrap_content면 높이를 다 차지한다)
+            val lp = (v.layoutParams as? LinearLayout.LayoutParams) ?: Ui.lp().apply { marginEnd = Ui.dpi(ctx, gapAfter) }
+            bar.addView(v, lp)
+        }
         add(Ui.toolButton(ctx, "←") { finish() })
         titleView = Ui.text(ctx, doc.title, 17f, bold = true).apply {
             maxWidth = Ui.dpi(ctx, 220); isSingleLine = true

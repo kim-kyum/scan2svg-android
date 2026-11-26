@@ -1,0 +1,66 @@
+# 앱에 넣는 무료 글꼴(Google Fonts 저장소, SIL Open Font License 1.1)
+# 경로 | 가변 글꼴이면 이름 | 뽑을 굵기
+# 고정 글꼴은 이름·굵기를 비워 둔다(한글·로마자·기호만 남기고 그대로 넣는다).
+# 넷째 칸 ks: 한글은 자주 쓰는 2350자만(기본 고딕·명조인 Noto Sans KR·나눔고딕·나눔명조는 11172자 전부)
+# ── 한글: 본문·제목에 흔한 것
+ofl/notosanskr/NotoSansKR[wght].ttf | Noto Sans KR | 300,400,500,700,900
+ofl/notoserifkr/NotoSerifKR[wght].ttf | Noto Serif KR | 400,500,700,900 | ks
+ofl/nanumgothic/NanumGothic-Regular.ttf
+ofl/nanumgothic/NanumGothic-Bold.ttf
+ofl/nanumgothic/NanumGothic-ExtraBold.ttf
+ofl/nanummyeongjo/NanumMyeongjo-Regular.ttf
+ofl/nanummyeongjo/NanumMyeongjo-Bold.ttf
+ofl/nanummyeongjo/NanumMyeongjo-ExtraBold.ttf
+ofl/nanumgothiccoding/NanumGothicCoding-Regular.ttf |  |  | ks
+ofl/nanumgothiccoding/NanumGothicCoding-Bold.ttf |  |  | ks
+ofl/gothica1/GothicA1-Light.ttf |  |  | ks
+ofl/gothica1/GothicA1-Regular.ttf |  |  | ks
+ofl/gothica1/GothicA1-Medium.ttf |  |  | ks
+ofl/gothica1/GothicA1-Bold.ttf |  |  | ks
+ofl/gothica1/GothicA1-Black.ttf |  |  | ks
+ofl/ibmplexsanskr/IBMPlexSansKR-Light.ttf |  |  | ks
+ofl/ibmplexsanskr/IBMPlexSansKR-Regular.ttf |  |  | ks
+ofl/ibmplexsanskr/IBMPlexSansKR-Medium.ttf |  |  | ks
+ofl/ibmplexsanskr/IBMPlexSansKR-Bold.ttf |  |  | ks
+ofl/gowunbatang/GowunBatang-Regular.ttf |  |  | ks
+ofl/gowunbatang/GowunBatang-Bold.ttf |  |  | ks
+ofl/gowundodum/GowunDodum-Regular.ttf |  |  | ks
+ofl/hahmlet/Hahmlet[wght].ttf | Hahmlet | 400,700 | ks
+ofl/songmyung/SongMyung-Regular.ttf |  |  | ks
+ofl/sunflower/Sunflower-Light.ttf |  |  | ks
+ofl/sunflower/Sunflower-Medium.ttf |  |  | ks
+ofl/sunflower/Sunflower-Bold.ttf |  |  | ks
+# ── 한글: 포스터·안내문에 흔한 것
+ofl/dohyeon/DoHyeon-Regular.ttf |  |  | ks
+ofl/jua/Jua-Regular.ttf |  |  | ks
+ofl/blackhansans/BlackHanSans-Regular.ttf |  |  | ks
+ofl/nanumpenscript/NanumPenScript-Regular.ttf |  |  | ks
+# ── 로마자
+ofl/stixtwotext/STIXTwoText[wght].ttf | STIX Two Text | 400,700
+ofl/stixtwotext/STIXTwoText-Italic[wght].ttf | STIX Two Text | 400,700
+ofl/notoserif/NotoSerif[wdth,wght].ttf | Noto Serif | 400,700
+ofl/notoserif/NotoSerif-Italic[wdth,wght].ttf | Noto Serif | 400
+ofl/notosans/NotoSans[wdth,wght].ttf | Noto Sans | 400,500,700
+ofl/notosans/NotoSans-Italic[wdth,wght].ttf | Noto Sans | 400
+ofl/opensans/OpenSans[wdth,wght].ttf | Open Sans | 400,600,700
+ofl/opensans/OpenSans-Italic[wdth,wght].ttf | Open Sans | 400
+ofl/inter/Inter[opsz,wght].ttf | Inter | 300,400,500,600,700
+ofl/montserrat/Montserrat[wght].ttf | Montserrat | 400,500,700
+ofl/sourceserif4/SourceSerif4[opsz,wght].ttf | Source Serif 4 | 400,700
+ofl/sourceserif4/SourceSerif4-Italic[opsz,wght].ttf | Source Serif 4 | 400
+ofl/merriweather/Merriweather[opsz,wdth,wght].ttf | Merriweather | 400,700
+ofl/ebgaramond/EBGaramond[wght].ttf | EB Garamond | 400,600
+ofl/ebgaramond/EBGaramond-Italic[wght].ttf | EB Garamond | 400
+ofl/lato/Lato-Light.ttf
+ofl/lato/Lato-Regular.ttf
+ofl/lato/Lato-Italic.ttf
+ofl/lato/Lato-Bold.ttf
+ofl/lato/Lato-Black.ttf
+ofl/poppins/Poppins-Light.ttf
+ofl/poppins/Poppins-Regular.ttf
+ofl/poppins/Poppins-Italic.ttf
+ofl/poppins/Poppins-Medium.ttf
+ofl/poppins/Poppins-SemiBold.ttf
+ofl/poppins/Poppins-Bold.ttf
+# ── 수식(나중에 수식 다시 그리기에 쓴다: 줄이지 않고 그대로)
+ofl/stixtwomath/STIXTwoMath-Regular.ttf | = |

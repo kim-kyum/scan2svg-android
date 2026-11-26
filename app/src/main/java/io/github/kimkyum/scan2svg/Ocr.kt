@@ -18,7 +18,7 @@ object Ocr {
         TextRecognition.getClient(KoreanTextRecognizerOptions.Builder().build())
     }
 
-    /** PNG 파일 하나를 읽어 {"words":[{text,x,y,w,h,conf}], "chars":[[글자,왼쪽,오른쪽],…]} JSON으로 돌려준다. 메인 스레드에서 부르면 안 된다. */
+    /** PNG 파일 하나를 읽어 {"words":[{text,x,y,w,h,conf}], "chars":[[글자,왼쪽,오른쪽,세로 중심],…]} JSON으로 돌려준다. 메인 스레드에서 부르면 안 된다. */
     @JvmStatic
     fun recognize(path: String): String {
         val words = JSONArray()
@@ -39,7 +39,7 @@ object Ocr {
                         )
                         for (sym in el.symbols) {
                             val sb = sym.boundingBox ?: continue
-                            chars.put(JSONArray().put(sym.text).put(sb.left).put(sb.right))
+                            chars.put(JSONArray().put(sym.text).put(sb.left).put(sb.right).put((sb.top + sb.bottom) / 2.0))
                         }
                     }
                 }

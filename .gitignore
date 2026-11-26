@@ -11,4 +11,3 @@ __pycache__/
 *.pyc
 app/src/main/assets/fonts/
 fonts-src/
-app/src/androidTest/assets/

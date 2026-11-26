@@ -89,12 +89,51 @@ def _intersect(l1, l2):
 
 
 def find_page_quad(img):
-    """배경보다 밝은 가장 큰 사각형(용지)의 네 꼭짓점 [TL, TR, BR, BL]. 못 찾으면 None."""
+    """용지의 네 꼭짓점 [TL, TR, BR, BL]. 못 찾으면 None.
+    후보를 여러 방법으로 만들고(밝기 이진화, 색 없음(종이는 무채색) 이진화, 긴 직선 조합), 네 변이 실제 경계(밝기가
+    바뀌는 곳)를 따라가는 정도와 넓이로 점수를 매겨 고른다. 배경이 밝거나 그림자가 져도 버티게 하려는 것."""
     h, w = img.shape[:2]
     k = 900.0 / max(h, w)
     small = cv2.resize(img, None, fx=k, fy=k, interpolation=cv2.INTER_AREA)
-    L = cv2.GaussianBlur(cv2.cvtColor(small, cv2.COLOR_BGR2LAB)[..., 0], (0, 0), 2)
+    sh, sw = small.shape[:2]
+    lab = cv2.cvtColor(small, cv2.COLOR_BGR2LAB)
+    L = cv2.GaussianBlur(lab[..., 0], (0, 0), 2)
+    chroma = cv2.GaussianBlur(np.hypot(lab[..., 1].astype(np.float32) - 128, lab[..., 2].astype(np.float32) - 128), (0, 0), 3)
+    edges = cv2.Canny(L, 10, 30)
+    gx = cv2.Sobel(L.astype(np.float32), cv2.CV_32F, 1, 0, ksize=3)
+    gy = cv2.Sobel(L.astype(np.float32), cv2.CV_32F, 0, 1, ksize=3)
+
+    cands = []
+    # 1) 밝기 이진화(오츠)  2) 무채색 이진화: 종이는 색이 거의 없고 책상·바닥은 대개 색이 있다
+    masks = []
     _, th = cv2.threshold(L, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    masks.append(th)
+    if chroma.max() - chroma.min() > 4:
+        c8 = cv2.normalize(chroma, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+        _, tc = cv2.threshold(c8, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        masks.append(tc)
+        masks.append(cv2.bitwise_and(th, tc))
+    otsu_q = None
+    for j, m in enumerate(masks):
+        q = _mask_quad(m)
+        if q is not None:
+            if j == 0:
+                otsu_q = q
+            cands.append(q)
+    # 3) 긴 직선 넷의 조합
+    cands += _line_quads(edges, sw, sh)
+
+    scores = [_quad_score(q, gx, gy, L, sw, sh) for q in cands]
+    if not scores or max(scores) < 0.25:
+        return None
+    best = cands[int(np.argmax(scores))]
+    # 밝기 이진화(예전 방식)가 거의 같은 점수면 그것을 쓴다 — 잘 되던 사진에서 결과가 흔들리지 않게
+    if otsu_q is not None and scores[0] >= 0.9 * max(scores):
+        best = otsu_q
+    return _refine_quad(img, best.astype(np.float32) / k)
+
+
+def _mask_quad(th):
     th = cv2.morphologyEx(th, cv2.MORPH_CLOSE, np.ones((21, 21), np.uint8))
     th = cv2.morphologyEx(th, cv2.MORPH_OPEN, np.ones((11, 11), np.uint8))
     cnts, _ = cv2.findContours(th, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
@@ -130,8 +169,107 @@ def find_page_quad(img):
             lines.append((np.array([x0, y0]), np.array([vx, vy])))
         else:
             lines.append((a, d))
-    corners = np.array([_intersect(lines[i - 1], lines[i]) for i in range(4)], np.float32) / k
-    return _refine_quad(img, corners)
+    return np.array([_intersect(lines[i - 1], lines[i]) for i in range(4)], np.float32)
+
+
+def _line_quads(edges, sw, sh, per_side=5):
+    """허프 변환으로 찾은 긴 직선 가운데 위·아래·왼쪽·오른쪽 후보를 몇 개씩 골라 네 변의 조합을 만든다."""
+    segs = cv2.HoughLinesP(edges, 1, np.pi / 360, threshold=50, minLineLength=int(0.2 * min(sw, sh)), maxLineGap=25)
+    if segs is None:
+        return []
+    side = {"t": [], "b": [], "l": [], "r": []}
+    for x1, y1, x2, y2 in segs.reshape(-1, 4).astype(np.float32):
+        dx, dy = x2 - x1, y2 - y1
+        ln = math.hypot(dx, dy)
+        ang = abs(math.degrees(math.atan2(dy, dx))) % 180
+        p, d = np.array([x1, y1]), np.array([dx, dy]) / ln
+        if ang < 30 or ang > 150:
+            side["t" if (y1 + y2) / 2 < sh / 2 else "b"].append((ln, p, d))
+        elif 60 < ang < 120:
+            side["l" if (x1 + x2) / 2 < sw / 2 else "r"].append((ln, p, d))
+    # 같은 직선의 조각은 하나로: 길이순으로 고르되 서로 가까운 것은 건너뛴다
+    pick = {}
+    for k_, arr in side.items():
+        arr.sort(key=lambda t: -t[0])
+        chosen = []
+        for ln, p, d in arr:
+            c = p + d * ln / 2
+            if all(abs((c - q[1]) @ np.array([-q[2][1], q[2][0]])) > 8 for q in chosen):
+                chosen.append((ln, p, d))
+            if len(chosen) >= per_side:
+                break
+        pick[k_] = chosen
+    if not all(pick.values()):
+        return []
+    out = []
+    for t in pick["t"]:
+        for r in pick["r"]:
+            for b in pick["b"]:
+                for l_ in pick["l"]:
+                    L4 = [(t[1], t[2]), (r[1], r[2]), (b[1], b[2]), (l_[1], l_[2])]
+                    try:
+                        q = np.array([_intersect(L4[i - 1], L4[i]) for i in range(4)], np.float32)
+                    except Exception:
+                        continue
+                    if np.all(np.isfinite(q)):
+                        out.append(q)  # 순서: TL(=왼쪽∩위), TR, BR, BL
+    return out
+
+
+def _quad_score(q, gx, gy, L, sw, sh):
+    """네 변이 '안쪽이 밝은 경계'를 따라가는 비율(가장 약한 변 쪽에 무게) × 넓이 비율의 제곱근. 모양이 이상하면 0."""
+    q = np.asarray(q, np.float32)
+    if not cv2.isContourConvex(q.reshape(-1, 1, 2).astype(np.float32)):
+        return 0.0
+    area = cv2.contourArea(q) / (sw * sh)
+    if area < 0.2 or area > 1.02:
+        return 0.0
+    for i in range(4):
+        a, b, c = q[i - 1], q[i], q[(i + 1) % 4]
+        u, v = a - b, c - b
+        cosang = float(u @ v / (np.linalg.norm(u) * np.linalg.norm(v) + 1e-6))
+        if abs(cosang) > 0.5:  # 꼭짓점 각이 60~120도를 벗어남
+            return 0.0
+    # 화면 밖으로 크게 나간 꼭짓점
+    if np.any(q[:, 0] < -0.05 * sw) or np.any(q[:, 0] > 1.05 * sw) or np.any(q[:, 1] < -0.05 * sh) or np.any(q[:, 1] > 1.05 * sh):
+        return 0.0
+    ctr = q.mean(0)
+    sup, border = [], 0
+    for i in range(4):
+        a, b = q[i], q[(i + 1) % 4]
+        d = (b - a) / (np.linalg.norm(b - a) + 1e-6)
+        nrm = np.array([-d[1], d[0]], np.float32)
+        if (ctr - a) @ nrm < 0:
+            nrm = -nrm
+        ts = np.linspace(0.05, 0.95, 50, dtype=np.float32)
+        pts = a[None] + ts[:, None] * (b - a)[None]
+        inside = (pts[:, 0] > 2) & (pts[:, 0] < sw - 3) & (pts[:, 1] > 2) & (pts[:, 1] < sh - 3)
+        if inside.mean() < 0.5:  # 변이 사진 가장자리에 걸침(용지가 화면을 넘침) — 경계 대신 화면 끝으로 본다
+            sup.append(0.5)
+            border += 1
+            continue
+        hit = 0
+        for (x, y) in pts[inside]:
+            best = 0.0
+            for o in (-2, -1, 0, 1, 2):
+                xx, yy = int(round(x + o * nrm[0])), int(round(y + o * nrm[1]))
+                if 0 <= xx < sw and 0 <= yy < sh:
+                    g = gx[yy, xx] * nrm[0] + gy[yy, xx] * nrm[1]  # 안쪽으로 밝아지면 +
+                    best = max(best, g)
+            if best <= 6.0:
+                continue
+            # 선(양쪽 밝기가 같음)이 아니라 경계(안쪽이 더 밝음)인지: 몇 픽셀 안팎의 밝기를 견준다
+            xi, yi = int(round(x + 6 * nrm[0])), int(round(y + 6 * nrm[1]))
+            xo, yo = int(round(x - 6 * nrm[0])), int(round(y - 6 * nrm[1]))
+            if 0 <= xo < sw and 0 <= yo < sh and 0 <= xi < sw and 0 <= yi < sh:
+                hit += 1.0 if int(L[yi, xi]) - int(L[yo, xo]) > 3 else 0.5  # 밝기 차가 없으면 인쇄된 선일 수도 있어 반만
+            else:
+                hit += 1.0
+        sup.append(hit / max(1, inside.sum()))
+    if border >= 3:  # 사진 테두리 자체 — 용지를 찾은 것이 아니다
+        return 0.0
+    sup = np.array(sup)
+    return float((0.5 * sup.min() + 0.5 * sup.mean()) * math.sqrt(area))
 
 
 def _refine_quad(img, quad):
@@ -181,6 +319,101 @@ def rectify(img, quad, max_side=2400):
     shrink = W < wA * 0.9
     return cv2.warpPerspective(img, M, (W, H), flags=cv2.INTER_AREA if shrink else cv2.INTER_CUBIC,
                                borderMode=cv2.BORDER_REPLICATE), page_mm
+
+
+def extract_rules(flat, u):
+    """옅은 회색의 긴 가로·세로 선(모눈, 표의 옅은 괘선, 밑줄)을 먼저 찾아 <line>으로 만들고 그림에서 지운다.
+    이런 선은 사진에서 흐려져 종이색과 섞이므로, 색 면 분할로는 점선 조각·작은 점 수백 개가 되어 버린다(느리고 지저분함).
+    거의 검은 선은 기존 방식(상자·표 인식)에 맡긴다. 돌려주는 값: (선 목록, 선을 지운 그림)"""
+    H, W = flat.shape[:2]
+    gray = cv2.cvtColor(flat, cv2.COLOR_BGR2GRAY).astype(np.float32)
+    paper_g = float(np.percentile(gray, 90))
+    dark = np.clip(paper_g - gray, 0, 255)
+    Lmin = int(max(60, 0.045 * W))
+    maxw = max(3.0, 5.5 * u)
+    out = []
+    kill = np.zeros((H, W), np.uint8)
+    for horiz in (True, False):
+        # 가는 선만 남기기(두꺼운 면·글자 덩어리 제거) → 선 방향으로 흐리게 해 잡음·끊김을 메움 → 이진화 → 긴 것만
+        tk = cv2.getStructuringElement(cv2.MORPH_RECT, (1, int(3 * maxw) | 1) if horiz else (int(3 * maxw) | 1, 1))
+        th = cv2.morphologyEx(dark, cv2.MORPH_TOPHAT, tk)
+        sm = cv2.blur(th, (15, 1) if horiz else (1, 15))
+        bw = (sm > 7).astype(np.uint8)
+        bw = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (9, 1) if horiz else (1, 9)))
+        bw = cv2.morphologyEx(bw, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (Lmin, 1) if horiz else (1, Lmin)))
+        n, lab_, st, _ = cv2.connectedComponentsWithStats(bw, 8)
+        for i in range(1, n):
+            x, y, w, h, area = st[i]
+            length, thick = (w, h) if horiz else (h, w)
+            if length < Lmin or thick > 3 * maxw:
+                continue
+            # 선의 위치·굵기·진하기: 선을 가로지르는 평균 단면에서
+            pad = int(maxw) + 2
+            if horiz:
+                y0, y1 = max(0, y - pad), min(H, y + h + pad)
+                prof = dark[y0:y1, x:x + w].mean(1)
+            else:
+                y0, y1 = max(0, x - pad), min(W, x + w + pad)
+                prof = dark[y:y + h, y0:y1].mean(0)
+            pk = int(prof.argmax())
+            peak = float(prof[pk])
+            if peak < 6:
+                continue
+            half = prof > peak / 2
+            lo = pk
+            while lo > 0 and half[lo - 1]:
+                lo -= 1
+            hi = pk
+            while hi < len(prof) - 1 and half[hi + 1]:
+                hi += 1
+            tw = hi - lo + 1
+            if tw > maxw:
+                continue
+            band = prof[max(0, lo - 1):hi + 2]
+            ctr = y0 + float((np.arange(max(0, lo - 1), max(0, lo - 1) + len(band)) * band).sum() / max(band.sum(), 1e-6)) + 0.5
+            # 선 중심을 따라 본 진하기: 가장 진한 쪽(흐림이 덜한 곳) 기준
+            if horiz:
+                core = gray[int(ctr), x:x + w]
+            else:
+                core = gray[y:y + h, int(ctr)]
+            g = float(np.percentile(core, 20))
+            if g < 95:  # 거의 검은 선은 기존 방식으로
+                continue
+            # 선은 길이 내내 이어져 있다. 글자 줄을 따라 생긴 가짜 선은 군데군데 끊긴다
+            if float(((paper_g - core) > max(4.0, 0.35 * (paper_g - g))).mean()) < 0.85:
+                continue
+            ink_amt = float(band.sum())  # 길이 1당 어두움 합
+            sw = float(np.clip(ink_amt / max(paper_g - g, 1.0), 0.8, max(1.0, tw)))
+            col = np.array([g, g, g], np.float32)
+            if horiz:
+                seg = dict(type="line", x1=float(x), y1=ctr, x2=float(x + w), y2=ctr)
+                ya, yb = int(ctr - tw / 2 - 1.5), int(ctr + tw / 2 + 2.5)
+                reg = gray[ya:yb, x:x + w]
+                cand = (slice(ya, yb), slice(x, x + w), (reg > g - 30).astype(np.uint8))
+            else:
+                seg = dict(type="line", x1=ctr, y1=float(y), x2=ctr, y2=float(y + h))
+                xa, xb = int(ctr - tw / 2 - 1.5), int(ctr + tw / 2 + 2.5)
+                reg = gray[y:y + h, xa:xb]
+                cand = (slice(y, y + h), slice(xa, xb), (reg > g - 30).astype(np.uint8))
+            # 칼라 선이면 그 색을 쓴다
+            cpx = flat[int(ctr), x:x + w] if horiz else flat[y:y + h, int(ctr)]
+            sel = cpx[core <= np.percentile(core, 30)]
+            if len(sel):
+                col = np.median(sel, axis=0)
+            if float(col.max() - col.min()) > 24:  # 색 있는 선(빨간 밑줄, 초록 상자 테두리)은 기존 방식으로
+                continue
+            if min(seg["y1"], seg["y2"]) < 4 or max(seg["y1"], seg["y2"]) > H - 4 or \
+                    min(seg["x1"], seg["x2"]) < 4 and max(seg["x1"], seg["x2"]) < 4 + 1 or min(seg["x1"], seg["x2"]) > W - 5:
+                continue  # 용지 가장자리
+            seg.update(sw=round(sw, 2), bgr=np.clip(col, 0, 255).astype(np.uint8), stroke=True, rule=True)
+            out.append(seg)
+            kill[cand[0], cand[1]] |= cand[2]
+    if not out:
+        return [], flat
+    cleaned = flat.copy()
+    paper = np.percentile(flat.reshape(-1, 3), 90, axis=0).astype(np.uint8)
+    cleaned[kill > 0] = paper
+    return out, cleaned
 
 
 def flatten_illumination(img):
@@ -1065,8 +1298,17 @@ def ocr_variants(softs, lang):
             return dict(words=[], conf=0.0, chars=[])
         ws = [dict(w, x=(w["x"] - pad) / k, w=w["w"] / k) for w in ws]
         return dict(words=[w["text"] for w in merge_words(ws, sft)], conf=float(np.mean([w["conf"] for w in ws])) if ws else 0.0,
-                    chars=[(ch, (xa - pad) / k, (xb - pad) / k) for ch, xa, xb in chars])
+                    chars=[(ch, (xa - pad) / k, (xb - pad) / k) for ch, xa, xb, *_ in chars])
 
+    if OCR_BACKEND is not None and getattr(OCR_BACKEND, "char_y", False):
+        # 기기 OCR은 부르는 횟수가 시간을 좌우한다: 줄들을 쌓은 한 장씩, 설정마다 몇 번만 부른다
+        res = [[None] * len(confs) for _ in softs]
+        for ci, (lg, tg) in enumerate(confs):
+            for c0 in range(0, len(softs), 16):
+                part = softs[c0:c0 + 16]
+                for j, v in enumerate(_ocr_stack(part, lg, tg)):
+                    res[c0 + j][ci] = v
+        return res
     jobs = [(sft, lg, tg) for sft in softs for lg, tg in confs]
     if OCR_BACKEND is not None:
         res = [one(j) for j in jobs]
@@ -1075,6 +1317,51 @@ def ocr_variants(softs, lang):
             res = list(ex.map(one, jobs))
     n = len(confs)
     return [res[i * n:(i + 1) * n] for i in range(len(softs))]
+
+
+def _ocr_stack(softs, lang, target):
+    """줄 그림들을 같은 글자 높이로 쌓아 OCR 한 번 → 줄마다 dict(words, conf, chars). 글자 상자의 세로 위치가 필요하다
+    (OCR_BACKEND가 char_y=True이고 글자를 (글자, 왼쪽, 오른쪽, 세로 중심)으로 돌려줄 때)."""
+    rows, y, gap, mx = [], 40, 48, 40
+    for sft in softs:
+        k = target / sft.shape[0]
+        im = _resize(sft, k)
+        k = im.shape[0] / sft.shape[0]
+        rows.append((y, im, k))
+        y += im.shape[0] + gap
+    sheet = np.full((y, max(r[1].shape[1] for r in rows) + 2 * mx), 255, np.uint8)
+    for ry, im, _ in rows:
+        sheet[ry:ry + im.shape[0], mx:mx + im.shape[1]] = (255 * (1 - im)).astype(np.uint8)
+    centers = np.array([r[0] + r[1].shape[0] / 2 for r in rows])
+
+    def row_of(cy):
+        j = int(np.abs(centers - cy).argmin())
+        return j if abs(centers[j] - cy) <= rows[j][1].shape[0] * 0.75 else -1
+
+    try:
+        ws, chars = OCR_BACKEND(sheet, False, lang)
+    except Exception:
+        return [dict(words=[], conf=0.0, chars=[]) for _ in softs]
+    per_w = [[] for _ in rows]
+    per_c = [[] for _ in rows]
+    for w in ws:
+        j = row_of(w["y"] + w["h"] / 2)
+        if j >= 0:
+            k = rows[j][2]
+            per_w[j].append(dict(w, x=(w["x"] - mx) / k, w=w["w"] / k))
+    for c in chars:
+        if len(c) < 4:
+            continue
+        j = row_of(c[3])
+        if j >= 0:
+            k = rows[j][2]
+            per_c[j].append((c[0], (c[1] - mx) / k, (c[2] - mx) / k))
+    out = []
+    for j, sft in enumerate(softs):
+        w_ = per_w[j]
+        out.append(dict(words=[w["text"] for w in merge_words(w_, sft)],
+                        conf=float(np.mean([w["conf"] for w in w_])) if w_ else 0.0, chars=per_c[j]))
+    return out
 
 
 def render_ref(face, text, lang=None, size=REF):
@@ -2403,6 +2690,7 @@ def process(src, out_svg, lang="kor+eng", font_dirs=None, max_side=2400, do_rect
     flat = flatten_illumination(page)
     H, W = flat.shape[:2]
     u = W / 1654.0  # 길이 임계값의 기준 단위(A4 200dpi에서 1)
+    rules, work = extract_rules(flat, u)
     stats.update(page_found=quad is not None, size=[W, H], page_mm=page_mm)
     T["rectify"] = time.time() - t0
     log(f"[1] 용지 {'검출' if quad is not None else '미검출(전체 사용)'} → {W}x{H}px")
@@ -2412,7 +2700,7 @@ def process(src, out_svg, lang="kor+eng", font_dirs=None, max_side=2400, do_rect
 
     # 2) 색 면 분할
     t = time.time()
-    labels, palette, pal_bgr, pal_thick, photos, photo_mask, lab = segment(flat, u)
+    labels, palette, pal_bgr, pal_thick, photos, photo_mask, lab = segment(work, u)
     paper_ink = 0
     if mark_reversed(labels, len(palette), u):  # 어두운 바탕 위의 흰 글자·무늬
         palette = np.vstack([palette, WHITE[None]])
@@ -2713,13 +3001,16 @@ def process(src, out_svg, lang="kor+eng", font_dirs=None, max_side=2400, do_rect
     kinds = defaultdict(int)
     for e in shapes:
         kinds[e["type"] + ("(선)" if e.get("stroke") is not None and e["type"] != "line" else "")] += 1
+    if rules:
+        kinds["옅은 선"] = len(rules)
     log(f"[5] 기본 도형 {dict(kinds)} / 일러스트 묶음 {len(illus)}개(경로 {sum(len(g['items']) for g in illus)}개) / 이미지 {len(images)}개")
 
     # 6) 출력 + 검증
-    layers = [("images", "이미지 조각(벡터화 안 함)", images), ("shapes", "도형", shapes),
+    grid = [dict(type="group", id="rules", items=rules)] if rules else []
+    layers = [("images", "이미지 조각(벡터화 안 함)", images), ("rules", "옅은 선·모눈", grid), ("shapes", "도형", shapes),
               ("illustrations", "일러스트", illus), ("text", "글자", texts)]
     write_svg(out_svg, W, H, page_mm, layers, flat if embed_reference else None, review)
-    preview = render(images + shapes + illus + texts, W, H)
+    preview = render(images + rules + shapes + illus + texts, W, H)
     diff = cv2.absdiff(cv2.GaussianBlur(flat, (0, 0), 1.5), cv2.GaussianBlur(preview, (0, 0), 1.5)).max(2)
     stats.update(mean_abs_diff=round(float(diff.mean()), 2), pixels_off=round(float((diff > 60).mean()) * 100, 3),
                  texts=text_report, palette=[to_hex(c) for c in pal_bgr],

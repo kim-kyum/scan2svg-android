@@ -14,6 +14,8 @@ import scan2svg as S
 
 
 class _DeviceOcr:
+    char_y = True  # 글자 상자의 세로 중심도 준다 → 다시 읽기를 줄들을 쌓은 몇 장으로 끝낼 수 있다
+
     def __init__(self, bridge, tmp_dir):
         self.bridge, self.tmp_dir, self.n = bridge, tmp_dir, 0
 
@@ -24,7 +26,7 @@ class _DeviceOcr:
         d = json.loads(str(self.bridge.ocr(path)))
         words = [dict(text=w["text"], x=float(w["x"]), y=float(w["y"]), w=float(w["w"]), h=float(w["h"]),
                       conf=float(w["conf"])) for w in d.get("words", []) if w.get("text", "").strip()]
-        chars = [(c[0], float(c[1]), float(c[2])) for c in d.get("chars", [])]
+        chars = [(c[0], float(c[1]), float(c[2])) + ((float(c[3]),) if len(c) > 3 else ()) for c in d.get("chars", [])]
         return words, chars
 
 
