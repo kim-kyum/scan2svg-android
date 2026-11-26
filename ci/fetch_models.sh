@@ -18,7 +18,9 @@ from onnxruntime.quantization import quantize_dynamic, QuantType
 d = sys.argv[1]
 for n in ("mfr_encoder", "mfr_decoder"):
     try:
-        quantize_dynamic(os.path.join(d, n + ".onnx"), os.path.join(d, "q", n + ".onnx"), weight_type=QuantType.QInt8)
+        # 행렬곱(MatMul)만 줄인다: 안드로이드용 ONNX Runtime에는 ConvInteger 구현이 없다
+        quantize_dynamic(os.path.join(d, n + ".onnx"), os.path.join(d, "q", n + ".onnx"), weight_type=QuantType.QInt8,
+                         op_types_to_quantize=["MatMul"])
         print("int8", n, os.path.getsize(os.path.join(d, "q", n + ".onnx")))
     except Exception as e:
         print("FAIL int8", n, e)
