@@ -128,7 +128,7 @@ class MathFinder:
             boxes.append(((cx - bw / 2) / k, (cy - bh / 2) / k, (cx + bw / 2) / k, (cy + bh / 2) / k, float(s), int(c)))
         return boxes
 
-    def find(self, bgr, tiles=(2, 3), overlap=0.12):
+    def find(self, bgr, tiles=(2, 2), overlap=0.12):
         """쪽 전체를 조각내어 찾는다(작은 줄 안 수식도 놓치지 않게). 돌려주는 값: [(x1,y1,x2,y2,점수,종류)] 종류 0=줄 안, 1=따로"""
         H, W = bgr.shape[:2]
         nx, ny = tiles

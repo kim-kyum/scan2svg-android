@@ -2591,9 +2591,22 @@ def place_formulas(flat, labels, u, stats):
     stats["math_found"] = len(boxes)
     out, tried = [], 0
     for (x1, y1, x2, y2, sc, kind) in sorted(boxes, key=lambda b: (b[1], b[0])):
-        X0, Y0 = max(0, int(x1) - 3), max(0, int(y1) - 3)
-        X1, Y1 = min(W, int(math.ceil(x2)) + 3), min(H, int(math.ceil(y2)) + 3)
-        ink = labels[Y0:Y1, X0:X1] > 0
+        # 상자 둘레를 넉넉히 잡고, 상자 안에 주로 들어 있는 잉크 덩어리만 수식으로 본다
+        # (상자에 걸친 모눈 조각·옆 글자를 넣으면 크기 맞춤이 틀어지고, 지울 때 남의 것까지 지운다)
+        m_ = int(12 * u)
+        X0, Y0 = max(0, int(x1) - m_), max(0, int(y1) - m_)
+        X1, Y1 = min(W, int(math.ceil(x2)) + m_), min(H, int(math.ceil(y2)) + m_)
+        raw = (labels[Y0:Y1, X0:X1] > 0).astype(np.uint8)
+        n_, cc_, st_, _ = cv2.connectedComponentsWithStats(raw, 8)
+        inner_ = np.zeros_like(raw)
+        bx0, by0, bx1, by1 = int(x1) - X0 - 2, int(y1) - Y0 - 2, int(math.ceil(x2)) - X0 + 2, int(math.ceil(y2)) - Y0 + 2
+        inner_[max(0, by0):by1, max(0, bx0):bx1] = 1
+        keep_ = np.zeros(n_, bool)
+        for c_ in range(1, n_):
+            area_ = st_[c_, 4]
+            inside_ = int(((cc_ == c_) & (inner_ > 0)).sum())
+            keep_[c_] = inside_ >= 0.7 * area_
+        ink = keep_[cc_]
         if ink.sum() < 15 * u * u:
             continue
         ys, xs = np.nonzero(ink)
@@ -2634,12 +2647,13 @@ def place_formulas(flat, labels, u, stats):
             a = cv2.GaussianBlur(rm, (0, 0), sig)
             b = cv2.GaussianBlur(ink.astype(np.float32), (0, 0), sig)
             sc_ = float((a * b).sum() / (math.sqrt((a * a).sum() * (b * b).sum()) + 1e-6))
-            if best is None or sc_ > best[0]:
+            if best is None or sc_ + (0.03 if tx_ != cands[0] else 0) > best[0] + (0.03 if best[1] != cands[0] else 0):
                 best = (sc_, tx_, inner, polys, s_, tx, ty)
         if best is None:
             continue
         score, tex, inner, polys, s_, tx, ty = best
-        ok = score >= 0.8 and (len(tex) > 3 or score >= 0.88)
+        n_sym = len(re.sub(r"\\[a-zA-Z]+|[\s{}]", "", tex))  # 기호 수(명령어·괄호·띄어쓰기 빼고)
+        ok = (score >= 0.8 or (score >= 0.74 and n_sym >= 8)) and (n_sym > 2 or score >= 0.88)
         stats.setdefault("math", []).append(dict(latex=tex, score=round(score, 3), box=[X0, Y0, X1, Y1], accepted=ok))
         if not ok:
             continue
