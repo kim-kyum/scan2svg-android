@@ -2584,7 +2584,7 @@ def place_formulas(flat, labels, u, stats):
     H, W = labels.shape
     t0 = time.time()
     try:
-        boxes = [b for b in mb.find(flat) if b[4] >= 0.5]
+        boxes = [b for b in mb.find(flat) if b[4] >= 0.55]
     except Exception as e:
         log(f"    ! 수식 찾기 실패({type(e).__name__}: {e})")
         return []
@@ -2612,6 +2612,15 @@ def place_formulas(flat, labels, u, stats):
         ys, xs = np.nonzero(ink)
         ix0, ix1, iy0, iy1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
         tried += 1
+        # 한글이 읽히는 상자는 수식이 아니다(표 안의 '화요일' 같은 짧은 낱말을 수식으로 잘못 찾는 일이 있다)
+        try:
+            g_ = cv2.cvtColor(flat[Y0:Y1, X0:X1], cv2.COLOR_BGR2GRAY)
+            ws_, _ = _ocr(g_, True, "kor+eng")
+            if any(_is_hangul(ch) for w_ in ws_ for ch in w_["text"]):
+                stats.setdefault("math", []).append(dict(latex="(한글)", det=round(sc, 3), box=[X0, Y0, X1, Y1], accepted=False))
+                continue
+        except Exception:
+            pass
         try:
             mb.box = (x1, y1, x2, y2)  # (검사용 엔진이 어느 상자인지 알 수 있게)
             tex = mb.read(flat[Y0:Y1, X0:X1]).strip()
@@ -2653,8 +2662,10 @@ def place_formulas(flat, labels, u, stats):
             continue
         score, tex, inner, polys, s_, tx, ty = best
         n_sym = len(re.sub(r"\\[a-zA-Z]+|[\s{}]", "", tex))  # 기호 수(명령어·괄호·띄어쓰기 빼고)
-        ok = (score >= 0.8 or (score >= 0.74 and n_sym >= 8)) and (n_sym > 2 or score >= 0.88)
-        stats.setdefault("math", []).append(dict(latex=tex, score=round(score, 3), box=[X0, Y0, X1, Y1], accepted=ok))
+        ok = (score >= 0.8 or (score >= 0.74 and n_sym >= 8))
+        if n_sym <= 3:  # 짧은 것(축 이름 x, 낱글자)은 그림 겹침만으로 가리기 어렵다: 찾기 점수도 높아야
+            ok = ok and score >= 0.93 and sc >= 0.7
+        stats.setdefault("math", []).append(dict(latex=tex, score=round(score, 3), det=round(sc, 3), box=[X0, Y0, X1, Y1], accepted=ok))
         if not ok:
             continue
         px = flat[Y0:Y1, X0:X1][ink]
