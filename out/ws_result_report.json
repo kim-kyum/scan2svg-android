@@ -1,0 +1,440 @@
+{
+ "source": "src.jpg",
+ "page_found": true,
+ "size": [
+  1697,
+  2400
+ ],
+ "page_mm": [
+  210.0,
+  297.0
+ ],
+ "raqm": false,
+ "math_found": 6,
+ "math": [
+  {
+   "latex": "y = - { \\textstyle { \\frac { 1 } { 2 } } } x ^ { 2 } + 2 x",
+   "score": 0.862,
+   "det": 0.846,
+   "box": [
+    918,
+    289,
+    1153,
+    367
+   ],
+   "accepted": true
+  },
+  {
+   "latex": "y = x ^ { 2 } - 4 x + 3",
+   "score": 0.924,
+   "det": 0.842,
+   "box": [
+    168,
+    293,
+    414,
+    366
+   ],
+   "accepted": true
+  },
+  {
+   "latex": "y = - x ^ { 2 } + 6 x - 5",
+   "score": 0.803,
+   "det": 0.747,
+   "box": [
+    919,
+    951,
+    1188,
+    1023
+   ],
+   "accepted": true
+  },
+  {
+   "latex": "y = 2 ( x - 1 ) ^ { 2 } - 3",
+   "score": 0.92,
+   "det": 0.85,
+   "box": [
+    171,
+    953,
+    438,
+    1023
+   ],
+   "accepted": true
+  },
+  {
+   "latex": "y = { \\textstyle { \\frac { 1 } { 3 } } } ( x + 2 ) ^ { 2 } + 1",
+   "score": 0.942,
+   "det": 0.875,
+   "box": [
+    170,
+    1606,
+    436,
+    1679
+   ],
+   "accepted": true
+  },
+  {
+   "latex": "y = x ^ { 2 } + 2 x + 4",
+   "score": 0.927,
+   "det": 0.838,
+   "box": [
+    919,
+    1609,
+    1166,
+    1680
+   ],
+   "accepted": true
+  }
+ ],
+ "math_sec": 37.43,
+ "blur_sigma": 1.82,
+ "blur_from": "edges",
+ "font_candidates": 152,
+ "coarse_evals": 620,
+ "fine_evals": 136,
+ "full_scans": 8,
+ "lines": 12,
+ "font_match_sec": 2.49,
+ "ko_locl": false,
+ "reread_lines": 24,
+ "reread_changed": 0,
+ "chars_fixed": 0,
+ "reread_cut": true,
+ "reread_sec": 23.83,
+ "median_text_px": 28,
+ "low_resolution": false,
+ "mean_abs_diff": 1.5,
+ "pixels_off": 0.45,
+ "texts": [
+  {
+   "text": "2.고반이차함수의그래프그리기(교과 서 52쪽)",
+   "ocr_conf": 75,
+   "accepted": false,
+   "font": "Noto Sans KR Black",
+   "score": 0.696,
+   "size_px": 32.5,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.696,
+     "Noto Sans KR Black"
+    ],
+    [
+     0.672,
+     "Noto Sans KR Bold"
+    ],
+    [
+     0.626,
+     "Noto Sans KR Medium"
+    ],
+    [
+     0.567,
+     "Noto Sans KR Regular"
+    ]
+   ]
+  },
+  {
+   "text": "번 이름",
+   "ocr_conf": 64,
+   "accepted": false,
+   "font": "Noto Sans KR Regular",
+   "score": 0.492,
+   "size_px": 27.3,
+   "word_spacing_px": 21.84,
+   "alternatives": [
+    [
+     0.495,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.495,
+     "Noto Sans Mono CJK KR Regular"
+    ],
+    [
+     0.492,
+     "Noto Sans KR Regular"
+    ],
+    [
+     0.487,
+     "Noto Sans KR Medium"
+    ]
+   ]
+  },
+  {
+   "text": "다음 이차함수의 그래프를 좌표평면 위에 그리고, 꼭짓점의 좌표와 축의 방정식을 구하시오.",
+   "ocr_conf": 79,
+   "accepted": true,
+   "font": "Noto Serif CJK KR Regular",
+   "score": 0.933,
+   "size_px": 26.4,
+   "word_spacing_px": 1.03,
+   "alternatives": [
+    [
+     0.933,
+     "Noto Serif CJK KR Regular"
+    ],
+    [
+     0.923,
+     "NanumMyeongjo Regular"
+    ],
+    [
+     0.879,
+     "NanumMyeongjo Bold"
+    ],
+    [
+     0.861,
+     "NanumGothic Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "(1)",
+   "ocr_conf": 67,
+   "accepted": true,
+   "font": "Source Serif 4 Regular",
+   "score": 0.924,
+   "size_px": 30.5,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.924,
+     "Source Serif 4 Regular"
+    ],
+    [
+     0.922,
+     "Noto Serif CJK KR Regular"
+    ],
+    [
+     0.915,
+     "Source Sans Pro Regular"
+    ],
+    [
+     0.915,
+     "Noto Sans CJK KR Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "(2)",
+   "ocr_conf": 89,
+   "accepted": true,
+   "font": "Source Sans Pro Regular",
+   "score": 0.923,
+   "size_px": 32.1,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.923,
+     "Source Sans Pro Regular"
+    ],
+    [
+     0.919,
+     "NanumGothic Regular"
+    ],
+    [
+     0.916,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.907,
+     "Noto Serif CJK KR Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "(3)",
+   "ocr_conf": 92,
+   "accepted": true,
+   "font": "Source Sans Pro Regular",
+   "score": 0.908,
+   "size_px": 32.1,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.913,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.908,
+     "NanumGothic Regular"
+    ],
+    [
+     0.908,
+     "Source Sans Pro Regular"
+    ],
+    [
+     0.907,
+     "Noto Serif CJK KR Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "(4)",
+   "ocr_conf": 92,
+   "accepted": true,
+   "font": "Source Sans Pro Regular",
+   "score": 0.933,
+   "size_px": 32.1,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.933,
+     "Source Sans Pro Regular"
+    ],
+    [
+     0.931,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.911,
+     "NanumGothic Regular"
+    ],
+    [
+     0.908,
+     "Noto Serif CJK KR Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "(5)",
+   "ocr_conf": 87,
+   "accepted": true,
+   "font": "Source Sans Pro Regular",
+   "score": 0.904,
+   "size_px": 32.1,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.908,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.905,
+     "Source Sans Pro Regular"
+    ],
+    [
+     0.899,
+     "Carrois Gothic SC Regular"
+    ],
+    [
+     0.898,
+     "Noto Serif CJK KR Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "(6)",
+   "ocr_conf": 80,
+   "accepted": true,
+   "font": "Source Sans Pro Regular",
+   "score": 0.923,
+   "size_px": 32.1,
+   "word_spacing_px": 0.0,
+   "alternatives": [
+    [
+     0.923,
+     "Source Sans Pro Regular"
+    ],
+    [
+     0.916,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.913,
+     "NanumGothic Regular"
+    ],
+    [
+     0.899,
+     "Noto Serif CJK KR Regular"
+    ]
+   ],
+   "weak_chars": []
+  },
+  {
+   "text": "A, )",
+   "ocr_conf": 46,
+   "accepted": false,
+   "font": "Poppins Bold",
+   "score": 0.471,
+   "size_px": 20.7,
+   "word_spacing_px": 16.59,
+   "alternatives": [
+    [
+     0.471,
+     "Poppins Bold"
+    ],
+    [
+     0.465,
+     "Noto Sans Tamil UI Bold"
+    ],
+    [
+     0.464,
+     "Roboto Condensed Bold"
+    ],
+    [
+     0.464,
+     "Sunflower Bold"
+    ]
+   ]
+  },
+  {
+   "text": "경기북과학고등학교 22기 수학 !",
+   "ocr_conf": 63,
+   "accepted": true,
+   "font": "Noto Sans KR Regular",
+   "score": 0.922,
+   "size_px": 22.5,
+   "word_spacing_px": 0.98,
+   "alternatives": [
+    [
+     0.922,
+     "Noto Sans KR Regular"
+    ],
+    [
+     0.917,
+     "Noto Sans CJK KR Regular"
+    ],
+    [
+     0.907,
+     "NanumMyeongjo Bold"
+    ],
+    [
+     0.9,
+     "NanumGothic Regular"
+    ]
+   ],
+   "weak_chars": []
+  }
+ ],
+ "palette": [
+  "#000000",
+  "#9da09f"
+ ],
+ "counts": {
+  "text_lines": 8,
+  "shapes": 115,
+  "illustration_groups": 31,
+  "illustration_paths": 75,
+  "images": 0,
+  "formulas": 6
+ },
+ "seconds": {
+  "rectify": 1.77,
+  "segment": 38.75,
+  "ocr": 6.76,
+  "fonts_index": 0.0,
+  "font_match": 2.67,
+  "reread": 23.83,
+  "shapes": 1.23
+ },
+ "total_sec": 76.28,
+ "page_px": [
+  1697,
+  2400
+ ]
+}

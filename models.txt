@@ -1,0 +1,24 @@
+ok   mfd.onnx 44573224
+ok   mfr_encoder.onnx 87496990
+ok   mfr_decoder.onnx 30114937
+ok   config.json 4556
+ok   generation_config.json 210
+ok   preprocessor_config.json 450
+ok   tokenizer.json 39161
+ok   tokenizer_config.json 1181
+ok   special_tokens_map.json 964
+int8 mfr_encoder 23966185
+int8 mfr_decoder 9305287
+total 76100
+drwxr-xr-x 2 runner runner     4096 Nov 26 12:43 .
+drwxr-xr-x 4 runner runner     4096 Nov 26 12:43 ..
+-rw-r--r-- 1 runner runner     4556 Nov 26 12:43 config.json
+-rw-r--r-- 1 runner runner      210 Nov 26 12:43 generation_config.json
+-rw-r--r-- 1 runner runner 44573224 Nov 26 12:43 mfd.onnx
+-rw-r--r-- 1 runner runner  9305287 Nov 26 12:43 mfr_decoder.onnx
+-rw-r--r-- 1 runner runner 23966185 Nov 26 12:43 mfr_encoder.onnx
+-rw-r--r-- 1 runner runner      450 Nov 26 12:43 preprocessor_config.json
+-rw-r--r-- 1 runner runner      964 Nov 26 12:43 special_tokens_map.json
+-rw-r--r-- 1 runner runner    39161 Nov 26 12:43 tokenizer.json
+-rw-r--r-- 1 runner runner     1181 Nov 26 12:43 tokenizer_config.json
+75M	app/src/main/assets/models
