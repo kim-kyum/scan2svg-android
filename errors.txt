@@ -1,0 +1,28 @@
+27:Chaquopy: Installing for arm64-v8a
+29:Collecting numpy==1.26.2
+30:  Downloading https://chaquo.com/pypi-13.1/numpy/numpy-1.26.2-0-cp310-cp310-android_21_arm64_v8a.whl (5.0 MB)
+31:Collecting opencv-python==4.5.1.48
+32:  Downloading https://chaquo.com/pypi-13.1/opencv-python/opencv_python-4.5.1.48-2-cp310-cp310-android_24_arm64_v8a.whl (9.0 MB)
+33:Collecting pillow==11.0.0
+34:  Downloading https://chaquo.com/pypi-13.1/pillow/pillow-11.0.0-0-cp310-cp310-android_24_arm64_v8a.whl (582 kB)
+35:Collecting fonttools
+36:  Downloading fonttools-4.65.0-py3-none-any.whl (1.2 MB)
+37:Collecting ziamath
+38:  Downloading ziamath-0.13-py3-none-any.whl (856 kB)
+39:Collecting chaquopy-openblas>=0.2.20
+40:  Downloading https://chaquo.com/pypi-13.1/chaquopy-openblas/chaquopy_openblas-0.2.20-5-py3-none-android_21_arm64_v8a.whl (4.3 MB)
+41:Collecting chaquopy-libcxx>=11000
+42:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libcxx/chaquopy_libcxx-180000-0-py3-none-android_24_arm64_v8a.whl (413 kB)
+43:Collecting chaquopy-libjpeg>=1.5.3
+44:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libjpeg/chaquopy_libjpeg-1.5.3-1-py3-none-android_21_arm64_v8a.whl (176 kB)
+45:Collecting chaquopy-libgfortran>=4.9
+46:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libgfortran/chaquopy_libgfortran-4.9-0-py3-none-android_21_arm64_v8a.whl (495 kB)
+47:Collecting chaquopy-libpng>=1.6.34
+48:  Downloading https://chaquo.com/pypi-13.1/chaquopy-libpng/chaquopy_libpng-1.6.34-1-py3-none-android_21_arm64_v8a.whl (175 kB)
+49:Collecting chaquopy-freetype>=2.9.1
+50:  Downloading https://chaquo.com/pypi-13.1/chaquopy-freetype/chaquopy_freetype-2.9.1-2-py3-none-android_21_arm64_v8a.whl (533 kB)
+51:Collecting latex2mathml
+52:  Downloading latex2mathml-3.81.1-py3-none-any.whl (79 kB)
+53:Collecting ziafont>=0.10
+54:  Downloading ziafont-0.11-py3-none-any.whl (420 kB)
+56:Successfully installed chaquopy-freetype-2.9.1 chaquopy-libcxx-180000 chaquopy-libgfortran-4.9 chaquopy-libjpeg-1.5.3 chaquopy-libpng-1.6.34 chaquopy-openblas-0.2.20 fonttools-4.65.0 latex2mathml-3.81.1 numpy-1.26.2 opencv-python-4.5.1.48 pillow-11.0.0 ziafont-0.11 ziamath-0.13
