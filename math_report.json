@@ -1,0 +1,508 @@
+{
+ "models": {
+  "mfd": {
+   "inputs": [
+    [
+     "images",
+     [
+      "batch",
+      3,
+      "height",
+      "width"
+     ],
+     "tensor(float)"
+    ]
+   ],
+   "outputs": [
+    [
+     "output0",
+     [
+      "batch",
+      "Concatoutput0_dim_1",
+      "anchors"
+     ],
+     "tensor(float)"
+    ]
+   ],
+   "mb": 44.6
+  },
+  "mfr_encoder": {
+   "inputs": [
+    [
+     "pixel_values",
+     [
+      "batch_size",
+      "num_channels",
+      "height",
+      "width"
+     ],
+     "tensor(float)"
+    ]
+   ],
+   "outputs": [
+    [
+     "last_hidden_state",
+     [
+      "batch_size",
+      578,
+      384
+     ],
+     "tensor(float)"
+    ]
+   ],
+   "mb": 87.5
+  },
+  "mfr_decoder": {
+   "inputs": [
+    [
+     "input_ids",
+     [
+      "batch_size",
+      "decoder_sequence_length"
+     ],
+     "tensor(int64)"
+    ],
+    [
+     "encoder_hidden_states",
+     [
+      "batch_size",
+      "encoder_sequence_length",
+      384
+     ],
+     "tensor(float)"
+    ]
+   ],
+   "outputs": [
+    [
+     "logits",
+     [
+      "batch_size",
+      "decoder_sequence_length",
+      1200
+     ],
+     "tensor(float)"
+    ]
+   ],
+   "mb": 30.1
+  }
+ },
+ "images": [
+  {
+   "image": "worksheet_clean",
+   "detect_sec": 0.95,
+   "formulas": [
+    {
+     "box": [
+      177.4,
+      298.4,
+      390.4,
+      343.5
+     ],
+     "score": 0.865,
+     "kind": 0,
+     "latex": "y = x ^ { 2 } - 4 x + 3",
+     "sec": 0.41,
+     "latex_int8": "y = x ^ { 2 } - 4 x + 3",
+     "sec_int8": 0.33,
+     "render_ok": true
+    },
+    {
+     "box": [
+      905.9,
+      295.4,
+      1109.7,
+      345.0
+     ],
+     "score": 0.901,
+     "kind": 0,
+     "latex": "y = - \\frac { 1 } { 2 } x ^ { 2 } + 2 x",
+     "sec": 0.42,
+     "latex_int8": "y = - \\frac { 1 } { 2 } x ^ { 2 } + 2 x",
+     "sec_int8": 0.27,
+     "render_ok": true
+    },
+    {
+     "box": [
+      699.3,
+      577.4,
+      767.4,
+      613.6
+     ],
+     "score": 0.48,
+     "kind": 0,
+     "latex": "{ \\mathfrak { F } } : x =",
+     "sec": 0.36,
+     "latex_int8": "\\pm : x =",
+     "sec_int8": 0.18,
+     "render_ok": true
+    },
+    {
+     "box": [
+      673.6,
+      605.0,
+      692.2,
+      623.7
+     ],
+     "score": 0.323,
+     "kind": 0,
+     "latex": "\\mathbf { \\cdot x }",
+     "sec": 0.35,
+     "latex_int8": "\\mathbf { \\cdot x }",
+     "sec_int8": 0.18,
+     "render_ok": true
+    },
+    {
+     "box": [
+      1402.8,
+      605.0,
+      1422.1,
+      624.3
+     ],
+     "score": 0.56,
+     "kind": 0,
+     "latex": "\\mathbf { \\cdot x }",
+     "sec": 0.37,
+     "latex_int8": "\\mathbf { \\cdot x }",
+     "sec_int8": 0.2,
+     "render_ok": true
+    },
+    {
+     "box": [
+      906.9,
+      939.1,
+      1143.7,
+      984.2
+     ],
+     "score": 0.863,
+     "kind": 0,
+     "latex": "y = - x ^ { 2 } + 6 x - 5",
+     "sec": 0.41,
+     "latex_int8": "y = - x ^ { 2 } + 6 x - 5",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      178.3,
+      941.2,
+      414.0,
+      983.8
+     ],
+     "score": 0.89,
+     "kind": 0,
+     "latex": "y = 2 ( x - 1 ) ^ { 2 } - 3",
+     "sec": 0.42,
+     "latex_int8": "y = 2 ( x - 1 ) ^ { 2 } - 3",
+     "sec_int8": 0.25,
+     "render_ok": true
+    },
+    {
+     "box": [
+      674.1,
+      1245.8,
+      691.1,
+      1263.1
+     ],
+     "score": 0.256,
+     "kind": 0,
+     "latex": "\\mathbf { \\cdot x }",
+     "sec": 0.34,
+     "latex_int8": "\\mathbf { \\mathrm { X } }",
+     "sec_int8": 0.21,
+     "render_ok": true
+    },
+    {
+     "box": [
+      729.1,
+      1221.3,
+      765.6,
+      1246.6
+     ],
+     "score": 0.323,
+     "kind": 0,
+     "latex": "\\mathbf { x } =",
+     "sec": 0.33,
+     "latex_int8": "\\mathbf { x } =",
+     "sec_int8": 0.17,
+     "render_ok": true
+    },
+    {
+     "box": [
+      1403.1,
+      1245.7,
+      1421.7,
+      1264.1
+     ],
+     "score": 0.503,
+     "kind": 0,
+     "latex": "\\cdot \\mathbf { x }",
+     "sec": 0.37,
+     "latex_int8": "\\mathbf { \\cdot x }",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      178.5,
+      1577.7,
+      411.8,
+      1623.4
+     ],
+     "score": 0.904,
+     "kind": 0,
+     "latex": "y = \\frac { 1 } { 3 } ( x + 2 ) ^ { 2 } + 1",
+     "sec": 0.49,
+     "latex_int8": "y = \\frac { 1 } { 3 } ( x + 2 ) ^ { 2 } + 1",
+     "sec_int8": 0.28,
+     "render_ok": true
+    },
+    {
+     "box": [
+      907.4,
+      1579.0,
+      1121.5,
+      1624.4
+     ],
+     "score": 0.883,
+     "kind": 0,
+     "latex": "y = x ^ { 2 } + 2 x + 4",
+     "sec": 0.38,
+     "latex_int8": "y = x ^ { 2 } + 2 x + 4",
+     "sec_int8": 0.21,
+     "render_ok": true
+    },
+    {
+     "box": [
+      1144.6,
+      1621.5,
+      1165.5,
+      1645.1
+     ],
+     "score": 0.36,
+     "kind": 0,
+     "latex": "\\mathrm { y }",
+     "sec": 0.35,
+     "latex_int8": "\\mathrm { y }",
+     "sec_int8": 0.2,
+     "render_ok": true
+    },
+    {
+     "box": [
+      698.2,
+      1858.5,
+      767.8,
+      1895.5
+     ],
+     "score": 0.546,
+     "kind": 0,
+     "latex": "{ \\mathfrak { F } } : x =",
+     "sec": 0.39,
+     "latex_int8": "{ \\mathfrak { Z } } : x =",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      1428.8,
+      1860.3,
+      1496.3,
+      1892.0
+     ],
+     "score": 0.275,
+     "kind": 0,
+     "latex": "\\pm : x =",
+     "sec": 0.33,
+     "latex_int8": "\\pm : x =",
+     "sec_int8": 0.2,
+     "render_ok": true
+    },
+    {
+     "box": [
+      388.7,
+      1900.1,
+      405.2,
+      1920.2
+     ],
+     "score": 0.338,
+     "kind": 0,
+     "latex": "^ { 0 }",
+     "sec": 0.32,
+     "latex_int8": "^ { 0 }",
+     "sec_int8": 0.2,
+     "render_ok": true
+    }
+   ]
+  },
+  {
+   "image": "worksheet_scan",
+   "detect_sec": 0.88,
+   "formulas": [
+    {
+     "box": [
+      1023.2,
+      127.3,
+      1055.9,
+      163.4
+     ],
+     "score": 0.275,
+     "kind": 0,
+     "latex": "^ { * }",
+     "sec": 0.32,
+     "latex_int8": "*",
+     "sec_int8": 0.16,
+     "render_ok": true
+    },
+    {
+     "box": [
+      180.9,
+      306.3,
+      402.0,
+      354.8
+     ],
+     "score": 0.878,
+     "kind": 0,
+     "latex": "y = x ^ { 2 } - 4 x + 3",
+     "sec": 0.42,
+     "latex_int8": "y = x ^ { 2 } - 4 x + 3",
+     "sec_int8": 0.27,
+     "render_ok": true
+    },
+    {
+     "box": [
+      930.0,
+      302.6,
+      1140.5,
+      355.0
+     ],
+     "score": 0.887,
+     "kind": 0,
+     "latex": "y = - { \\textstyle { \\frac { 1 } { 2 } } } x ^ { 2 } + 2 x",
+     "sec": 0.51,
+     "latex_int8": "y = - { \\textstyle { \\frac { 1 } { 2 } } } x ^ { 2 } + 2 x",
+     "sec_int8": 0.3,
+     "render_ok": true
+    },
+    {
+     "box": [
+      716.0,
+      591.6,
+      787.5,
+      632.1
+     ],
+     "score": 0.35,
+     "kind": 0,
+     "latex": "\\xi _ { 1 } ; x =",
+     "sec": 0.36,
+     "latex_int8": "\\xi _ { 1 } ; x =",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      1440.7,
+      619.8,
+      1459.8,
+      641.2
+     ],
+     "score": 0.317,
+     "kind": 0,
+     "latex": "\\mathbf { x }",
+     "sec": 0.31,
+     "latex_int8": "\\mathbf { x }",
+     "sec_int8": 0.18,
+     "render_ok": true
+    },
+    {
+     "box": [
+      1466.3,
+      594.7,
+      1536.2,
+      627.2
+     ],
+     "score": 0.321,
+     "kind": 0,
+     "latex": "{ \\mathfrak { E } } _ { 1 } : x =",
+     "sec": 0.44,
+     "latex_int8": "{ \\mathfrak { Z } } _ { 1 } : x =",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      182.9,
+      967.0,
+      424.7,
+      1010.2
+     ],
+     "score": 0.914,
+     "kind": 0,
+     "latex": "y = 2 ( x - 1 ) ^ { 2 } - 3",
+     "sec": 0.41,
+     "latex_int8": "y = 2 ( x - 1 ) ^ { 2 } - 3",
+     "sec_int8": 0.25,
+     "render_ok": true
+    },
+    {
+     "box": [
+      931.4,
+      964.9,
+      1175.0,
+      1010.7
+     ],
+     "score": 0.873,
+     "kind": 0,
+     "latex": "y = - x ^ { 2 } + 6 x - 5",
+     "sec": 0.39,
+     "latex_int8": "y = - x ^ { 2 } + 6 x - 5",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      182.5,
+      1619.6,
+      424.1,
+      1667.6
+     ],
+     "score": 0.905,
+     "kind": 0,
+     "latex": "y = { \\textstyle \\frac { 1 } { 3 } } ( x + 2 ) ^ { 2 } + 1",
+     "sec": 0.51,
+     "latex_int8": "y = { \\textstyle \\frac { 1 } { 3 } } ( x + 2 ) ^ { 2 } + 1",
+     "sec_int8": 0.29,
+     "render_ok": true
+    },
+    {
+     "box": [
+      931.7,
+      1622.9,
+      1152.9,
+      1667.4
+     ],
+     "score": 0.869,
+     "kind": 0,
+     "latex": "y = x ^ { 2 } + 2 x + 4",
+     "sec": 0.38,
+     "latex_int8": "y = x ^ { 2 } + 2 x + 4",
+     "sec_int8": 0.23,
+     "render_ok": true
+    },
+    {
+     "box": [
+      399.1,
+      1951.8,
+      416.5,
+      1971.1
+     ],
+     "score": 0.261,
+     "kind": 0,
+     "latex": "0",
+     "sec": 0.27,
+     "latex_int8": "0",
+     "sec_int8": 0.18,
+     "render_ok": true
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,212 @@
+ok   mfd.onnx 44573224
+ok   mfr_encoder.onnx 87496990
+ok   mfr_decoder.onnx 30114937
+ok   config.json 4556
+ok   generation_config.json 210
+ok   preprocessor_config.json 450
+ok   tokenizer.json 39161
+ok   tokenizer_config.json 1181
+ok   special_tokens_map.json 964
+[0;93m2026-11-26 12:39:54.374275469 [W:onnxruntime:Default, device_discovery.cc:95 GetPciBusId] Skipping pci_bus_id for PCI path at "/sys/devices/LNXSYSTM:00/LNXSYBUS:00/ACPI0004:00/MSFT1000:00/5620e0c7-8062-4dce-aeb7-520c7ef76171" because filename "5620e0c7-8062-4dce-aeb7-520c7ef76171" did not match expected pattern of [0-9a-f]+:[0-9a-f]+:[0-9a-f]+[.][0-9a-f]+[m
+WARNING:root:Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+WARNING:root:Please consider to run pre-processing before quantization. Refer to example: https://github.com/microsoft/onnxruntime-inference-examples/blob/main/quantization/image_classification/cpu/ReadMe.md 
+int8 mfr_encoder 23966185
+int8 mfr_decoder 9305287
+== preprocessor_config.json
+{
+  "crop_size": {
+    "height": 224,
+    "width": 224
+  },
+  "do_center_crop": false,
+  "do_normalize": true,
+  "do_rescale": true,
+  "do_resize": true,
+  "image_mean": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "image_processor_type": "DeiTImageProcessor",
+  "image_std": [
+    0.5,
+    0.5,
+    0.5
+  ],
+  "processor_class": "TrOCRProcessor",
+  "resample": 3,
+  "rescale_factor": 0.00392156862745098,
+  "size": {
+    "height": 384,
+    "width": 384
+  }
+}
+
+== generation_config.json
+{
+  "_from_model_config": true,
+  "bos_token_id": 1,
+  "decoder_start_token_id": 2,
+  "eos_token_id": 2,
+  "max_new_tokens": 512,
+  "pad_token_id": 0,
+  "transformers_version": "4.37.0",
+  "use_cache": false
+}
+
+== config.json
+{
+  "_name_or_path": "breezedeus/pix2text-mfr",
+  "architectures": [
+    "VisionEncoderDecoderModel"
+  ],
+  "decoder": {
+    "_name_or_path": "",
+    "activation_dropout": 0.0,
+    "activation_function": "relu",
+    "add_cross_attention": true,
+    "architectures": null,
+    "attention_dropout": 0.0,
+    "bad_words_ids": null,
+    "begin_suppress_tokens": null,
+    "bos_token_id": 0,
+    "chunk_size_feed_forward": 0,
+    "classifier_dropout": 0.0,
+    "cross_attention_hidden_size": 384,
+    "d_model": 256,
+    "decoder_attention_heads": 8,
+    "decoder_ffn_dim": 1024,
+    "decoder_layerdrop": 0.0,
+    "decoder_layers": 6,
+    "decoder_start_token_id": 2,
+    "diversity_penalty": 0.0,
+    "do_sample": false,
+    "dropout": 0.1,
+    "early_stopping": false,
+    "encoder_no_repeat_ngram_size": 0,
+    "eos_token_id": 2,
+    "exponential_decay_length_penalty": null,
+    "finetuning_task": null,
+    "forced_bos_token_id": null,
+    "forced_eos_token_id": null,
+    "id2label": {
+      "0": "LABEL_0",
+      "1": "LABEL_1"
+    },
+    "init_std": 0.02,
+    "is_decoder": true,
+    "is_encoder_decoder": false,
+    "label2id": {
+      "LABEL_0": 0,
+      "LABEL_1": 1
+    },
+    "layernorm_embedding": true,
+    "length_penalty": 1.0,
+    "max_length": 20,
+    "max_position_embeddings": 512,
+    "min_length": 0,
+    "model_type": "trocr",
+    "no_repeat_ngram_size": 0,
+    "num_beam_groups": 1,
+    "num_beams": 1,
+    "num_return_sequences": 1,
+    "output_attentions": false,
+    "output_hi
+== tokenizer.json
+{
+  "version": "1.0",
+  "truncation": null,
+  "padding": null,
+  "added_tokens": [
+    {
+      "id": 0,
+      "content": "<pad>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 1,
+      "content": "<s>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 2,
+      "content": "</s>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 3,
+      "content": "<unk>",
+      "single_word": false,
+      "lstrip": false,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    },
+    {
+      "id": 4,
+      "content": "<mask>",
+      "single_word": false,
+      "lstrip": true,
+      "rstrip": false,
+      "normalized": false,
+      "special": true
+    }
+  ],
+  "normalizer": null,
+  "pre_tokenizer": {
+    "type": "ByteLevel",
+    "add_prefix_space": false,
+    "trim_offsets": true,
+    "use_regex": true
+  },
+  "post_processor": null,
+  "decoder": {
+    "type": "ByteLevel",
+    "add_prefix_space": true,
+    "trim_offsets": true,
+    "use_regex": true
+  },
+  "model": {
+    "type": "BPE",
+    "dropout": null,
+    "unk_token": null,
+    "continuing_subword_prefix": null,
+    "end_of_word_suffix": null,
+    "fuse_unk": false,
+    "byte_fallback": false,
+    "vocab": {
+      "<pad>": 0,
+models:
+total 159952
+drwxr-xr-x 3 runner runner     4096 Nov 26 12:39 .
+drwxr-xr-x 8 runner runner     4096 Nov 26 12:39 ..
+-rw-r--r-- 1 runner runner  1517976 Nov 26 12:39 STIXTwoMath-Regular.ttf
+-rw-r--r-- 1 runner runner     4556 Nov 26 12:39 config.json
+-rw-r--r-- 1 runner runner      210 Nov 26 12:39 generation_config.json
+-rw-r--r-- 1 runner runner 44573224 Nov 26 12:39 mfd.onnx
+-rw-r--r-- 1 runner runner 30114937 Nov 26 12:39 mfr_decoder.onnx
+-rw-r--r-- 1 runner runner 87496990 Nov 26 12:39 mfr_encoder.onnx
+-rw-r--r-- 1 runner runner      450 Nov 26 12:39 preprocessor_config.json
+drwxr-xr-x 2 runner runner     4096 Nov 26 12:39 q
+-rw-r--r-- 1 runner runner      964 Nov 26 12:39 special_tokens_map.json
+-rw-r--r-- 1 runner runner    39161 Nov 26 12:39 tokenizer.json
+-rw-r--r-- 1 runner runner     1181 Nov 26 12:39 tokenizer_config.json
+
+models/q:
+total 32504
+drwxr-xr-x 2 runner runner     4096 Nov 26 12:39 .
+drwxr-xr-x 3 runner runner     4096 Nov 26 12:39 ..
+-rw-r--r-- 1 runner runner  9305287 Nov 26 12:39 mfr_decoder.onnx
+-rw-r--r-- 1 runner runner 23966185 Nov 26 12:39 mfr_encoder.onnx
