@@ -1,0 +1,33 @@
+name: math-check
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  math:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python3 -m pip install -q onnxruntime onnx opencv-python-headless numpy ziamath
+      - name: Models
+        run: |
+          mkdir -p ci-out
+          bash ci/fetch_models.sh models 2>&1 | tee ci-out/models.txt
+      - name: Run
+        run: |
+          python3 ci/math_check.py models ci-out ci/testdata/worksheet_clean.png ci/testdata/worksheet_scan.jpg 2>&1 | tee ci-out/math.txt
+          echo "sha=${GITHUB_SHA} run=${GITHUB_RUN_NUMBER} math=done" > ci-out/status.txt
+      - name: Push results
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          [ -f ci-out/status.txt ] || echo "sha=${GITHUB_SHA} run=${GITHUB_RUN_NUMBER} math=failed" > ci-out/status.txt
+          bash ci/push_results.sh ci-math ci-out
