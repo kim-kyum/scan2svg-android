@@ -60,6 +60,7 @@ chaquopy {
             install pin((project.findProperty("opencvPackage") ?: "opencv-python").toString(), "opencvVersion", "4.5.1.48")
             install pin("pillow", "pillowVersion", "9.2.0")
             install "fonttools"
+            install "ziamath"
         }
     }
 }
@@ -69,6 +70,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'com.google.mlkit:text-recognition-korean:16.0.1'
+    implementation 'com.microsoft.onnxruntime:onnxruntime-android:1.20.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test:runner:1.6.2'

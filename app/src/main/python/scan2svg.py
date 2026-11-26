@@ -32,6 +32,7 @@ import base64
 import json
 import math
 import os
+import re
 import platform
 import sys
 import time
@@ -57,6 +58,7 @@ RAQM = features.check("raqm") and not os.environ.get("SCAN2SVG_BASIC_LAYOUT")
 
 
 # 다른 프로그램(안드로이드 앱 등)에 넣어 쓸 때 바꿔 끼우는 것들
+MATH_BACKEND = None  # 수식: find(bgr) -> [(x1,y1,x2,y2,점수,종류)], read(bgr 조각) -> LaTeX, font = 수식 글꼴 경로
 LOG_SINK = None     # 진행 메시지를 받을 함수(문자열 하나). 없으면 stderr로 찍는다
 CACHE_DIR = None    # 글꼴 색인 캐시를 둘 폴더. 없으면 ~/.cache/scan2svg
 OCR_BACKEND = None  # OCR 엔진. 없으면 Tesseract(pytesseract)를 쓴다.
@@ -2512,6 +2514,145 @@ def el_bbox(el, W, H, pad=3):
     return (max(0, int(b[0] - g)), max(0, int(b[1] - g)), min(W, int(math.ceil(b[2] + g))), min(H, int(math.ceil(b[3] + g))))
 
 
+def _math_shapes(inner):
+    """ziamath가 만든 SVG 조각(M·L·Q·Z 경로와 사각형) → 채울 다각형 목록(그 좌표계)."""
+    polys = []
+    for d in re.findall(r'<path[^>]* d="([^"]+)"', inner):
+        t = re.findall(r"[MLQZmlqz]|-?\d*\.?\d+(?:e-?\d+)?", d)
+        i, cur, sub, cmd = 0, (0.0, 0.0), [], None
+        while i < len(t):
+            if t[i] in "MLQZmlqz":
+                cmd = t[i].upper()
+                i += 1
+                if cmd == "Z":
+                    if len(sub) > 2:
+                        polys.append(np.array(sub, np.float32))
+                    sub = []
+                continue
+            if cmd == "M":
+                if len(sub) > 2:
+                    polys.append(np.array(sub, np.float32))
+                cur = (float(t[i]), float(t[i + 1]))
+                sub = [cur]
+                i += 2
+                cmd = "L"
+            elif cmd == "L":
+                cur = (float(t[i]), float(t[i + 1]))
+                sub.append(cur)
+                i += 2
+            elif cmd == "Q":
+                c = (float(t[i]), float(t[i + 1]))
+                e = (float(t[i + 2]), float(t[i + 3]))
+                for k in range(1, 7):
+                    a = k / 6
+                    sub.append(((1 - a) ** 2 * cur[0] + 2 * (1 - a) * a * c[0] + a * a * e[0],
+                                (1 - a) ** 2 * cur[1] + 2 * (1 - a) * a * c[1] + a * a * e[1]))
+                cur = e
+                i += 4
+            else:
+                i += 1
+        if len(sub) > 2:
+            polys.append(np.array(sub, np.float32))
+    for x, y, w, h in re.findall(r'<rect x="([-\d.]+)" y="([-\d.]+)" width="([\d.]+)" height="([\d.]+)"', inner):
+        x, y, w, h = float(x), float(y), float(w), float(h)
+        polys.append(np.array([(x, y), (x + w, y), (x + w, y + h), (x, y + h)], np.float32))
+    return polys
+
+
+def _math_raster(polys, s, tx, ty, W, H):
+    m = np.zeros((H, W), np.uint8)
+    pts = [np.round((p * s + (tx, ty)) * 8).astype(np.int32) for p in polys]
+    if pts:
+        cv2.fillPoly(m, pts, 255, lineType=cv2.LINE_AA, shift=3)
+    return m.astype(np.float32) / 255.0
+
+
+def place_formulas(flat, labels, u, stats):
+    """수식을 찾아 LaTeX로 읽고, 다시 그려 원본 잉크와 겹쳐 본 뒤 잘 맞는 것만 채택한다.
+    채택한 수식의 잉크는 labels에서 지운다(글자 줄·도형으로 다시 다루지 않게). 돌려주는 값: 수식 요소 목록"""
+    mb = MATH_BACKEND
+    font = getattr(mb, "font", None)
+    if mb is None or not font:
+        return []
+    import math_ocr
+    H, W = labels.shape
+    t0 = time.time()
+    try:
+        boxes = [b for b in mb.find(flat) if b[4] >= 0.5]
+    except Exception as e:
+        log(f"    ! 수식 찾기 실패({type(e).__name__}: {e})")
+        return []
+    stats["math_found"] = len(boxes)
+    out, tried = [], 0
+    for (x1, y1, x2, y2, sc, kind) in sorted(boxes, key=lambda b: (b[1], b[0])):
+        X0, Y0 = max(0, int(x1) - 3), max(0, int(y1) - 3)
+        X1, Y1 = min(W, int(math.ceil(x2)) + 3), min(H, int(math.ceil(y2)) + 3)
+        ink = labels[Y0:Y1, X0:X1] > 0
+        if ink.sum() < 15 * u * u:
+            continue
+        ys, xs = np.nonzero(ink)
+        ix0, ix1, iy0, iy1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+        tried += 1
+        try:
+            mb.box = (x1, y1, x2, y2)  # (검사용 엔진이 어느 상자인지 알 수 있게)
+            tex = mb.read(flat[Y0:Y1, X0:X1]).strip()
+        except Exception as e:
+            log(f"    ! 수식 읽기 실패({type(e).__name__})")
+            continue
+        if not tex:
+            continue
+        # 모델이 끝에 쉼표·마침표·간격 기호를 덧붙이곤 한다 → 떼어 낸 판도 그려 보고 더 잘 맞는 쪽을 쓴다
+        cands = [tex]
+        t2 = re.sub(r"(\s*(\\[,;:!]|[,.;]|\\quad|\\qquad))+\s*$", "", tex).strip()
+        if t2 and t2 != tex:
+            cands.append(t2)
+        best = None
+        for tx_ in cands:
+            r = math_ocr.latex_svg(tx_, 100, font)
+            if not r:
+                continue
+            inner = re.sub(r"^.*?<svg[^>]*>|</svg>\s*$", "", r[0], flags=re.S).replace(' fill="black"', "")
+            polys = _math_shapes(inner)
+            if not polys:
+                continue
+            allp = np.vstack(polys)
+            gx0, gy0 = allp.min(0)
+            gx1, gy1 = allp.max(0)
+            sw_, sh_ = (ix1 - ix0) / max(gx1 - gx0, 1e-3), (iy1 - iy0) / max(gy1 - gy0, 1e-3)
+            s_ = sw_ if abs(math.log(max(sw_, 1e-3) / max(sh_, 1e-3))) < 0.4 else math.sqrt(sw_ * sh_)
+            tx = X0 + (ix0 + ix1) / 2 - (gx0 + gx1) / 2 * s_
+            ty = Y0 + (iy0 + iy1) / 2 - (gy0 + gy1) / 2 * s_
+            rm = _math_raster(polys, s_, tx - X0, ty - Y0, X1 - X0, Y1 - Y0)
+            # 수식 글꼴·간격은 원본과 조금씩 다르다: 글자 높이에 비례해 넉넉히 흐려 견준다(엉뚱하게 읽은 것만 걸러 내려는 것)
+            sig = max(1.5 * u, 0.12 * (iy1 - iy0))
+            a = cv2.GaussianBlur(rm, (0, 0), sig)
+            b = cv2.GaussianBlur(ink.astype(np.float32), (0, 0), sig)
+            sc_ = float((a * b).sum() / (math.sqrt((a * a).sum() * (b * b).sum()) + 1e-6))
+            if best is None or sc_ > best[0]:
+                best = (sc_, tx_, inner, polys, s_, tx, ty)
+        if best is None:
+            continue
+        score, tex, inner, polys, s_, tx, ty = best
+        ok = score >= 0.8 and (len(tex) > 3 or score >= 0.88)
+        stats.setdefault("math", []).append(dict(latex=tex, score=round(score, 3), box=[X0, Y0, X1, Y1], accepted=ok))
+        if not ok:
+            continue
+        px = flat[Y0:Y1, X0:X1][ink]
+        col = px[np.argsort(px.astype(np.int32).sum(1))[: max(1, len(px) // 4)]].mean(0).astype(np.uint8)  # 번진 가장자리 말고 획 속 색
+        out.append(dict(type="math", latex=tex, inner=inner, polys=polys, s=s_, tx=tx, ty=ty, bgr=col, score=score))
+        labels[Y0:Y1, X0:X1][ink] = 0
+    stats["math_sec"] = round(time.time() - t0, 2)
+    if boxes:
+        log(f"    수식: 찾은 {len(boxes)}개 중 {len(out)}개를 수식으로 다시 그림 ({stats['math_sec']}s)")
+    return out
+
+
+def svg_math(el, k):
+    return (f'<g id="math-{k}" data-latex={quoteattr(el["latex"])} fill="{to_hex(el["bgr"])}" '
+            f'transform="translate({_n(el["tx"])} {_n(el["ty"])}) scale({el["s"]:.5f})">'
+            f'<title>{escape(el["latex"])}</title>{el["inner"]}</g>')
+
+
 def render(elements, W, H):
     """요소 목록을 그려 본다(BGR). SVG 렌더러 없이도 결과를 검증·미리보기할 수 있게."""
     canvas = np.full((H, W, 3), 255, np.float32)
@@ -2524,6 +2665,9 @@ def render(elements, W, H):
                 texts.append(el)
             elif t == "group":
                 draw(el["items"])
+            elif t == "math":
+                al = _math_raster(el["polys"], el["s"], el["tx"], el["ty"], W, H)[..., None]
+                canvas[:] = canvas * (1 - al) + np.asarray(el["bgr"], np.float32) * al
             elif t == "image":
                 x, y = int(el["x"]), int(el["y"])
                 im, al = el["bgr"].astype(np.float32), (el["alpha"].astype(np.float32) / 255)[..., None]
@@ -2658,6 +2802,8 @@ def write_svg(path, W, H, page_mm, layers, reference=None, review=None):
                 body.append("</g>")
             elif el["type"] == "text":
                 body.append(svg_text(el))
+            elif el["type"] == "math":
+                body.append(svg_math(el, len(body) + 1))
             else:
                 body.append(svg_shape(el))
         layer(id_, label, body)
@@ -2706,6 +2852,7 @@ def process(src, out_svg, lang="kor+eng", font_dirs=None, max_side=2400, do_rect
         palette = np.vstack([palette, WHITE[None]])
         pal_bgr, pal_thick = pal_bgr + [np.array([255, 255, 255], np.uint8)], np.append(pal_thick, True)
         paper_ink = len(palette)
+    maths = place_formulas(work, labels, u, stats) if MATH_BACKEND is not None else []
     cmap, comps = label_components(labels, len(palette), max(4, int(6 * u * u)))
     T["segment"] = time.time() - t
     log(f"[2] 팔레트 {len(palette)}색: {' '.join(to_hex(c) for c in pal_bgr)} / 사진 영역 {len(photos)}곳")
@@ -3008,14 +3155,14 @@ def process(src, out_svg, lang="kor+eng", font_dirs=None, max_side=2400, do_rect
     # 6) 출력 + 검증
     grid = [dict(type="group", id="rules", items=rules)] if rules else []
     layers = [("images", "이미지 조각(벡터화 안 함)", images), ("rules", "옅은 선·모눈", grid), ("shapes", "도형", shapes),
-              ("illustrations", "일러스트", illus), ("text", "글자", texts)]
+              ("illustrations", "일러스트", illus), ("math", "수식", maths), ("text", "글자", texts)]
     write_svg(out_svg, W, H, page_mm, layers, flat if embed_reference else None, review)
-    preview = render(images + rules + shapes + illus + texts, W, H)
+    preview = render(images + rules + shapes + illus + maths + texts, W, H)
     diff = cv2.absdiff(cv2.GaussianBlur(flat, (0, 0), 1.5), cv2.GaussianBlur(preview, (0, 0), 1.5)).max(2)
     stats.update(mean_abs_diff=round(float(diff.mean()), 2), pixels_off=round(float((diff > 60).mean()) * 100, 3),
                  texts=text_report, palette=[to_hex(c) for c in pal_bgr],
                  counts=dict(text_lines=len(texts), shapes=len(shapes), illustration_groups=len(illus),
-                             illustration_paths=sum(len(g["items"]) for g in illus), images=len(images)),
+                             illustration_paths=sum(len(g["items"]) for g in illus), images=len(images), formulas=len(maths)),
                  seconds={k: round(v, 2) for k, v in T.items()}, total_sec=round(time.time() - t0, 2))
     base = os.path.splitext(out_svg)[0]
     heat = cv2.applyColorMap(np.clip(diff.astype(np.float32) * 2, 0, 255).astype(np.uint8), cv2.COLORMAP_INFERNO)

@@ -38,6 +38,8 @@ jobs:
           gradle-version: '8.7'
       - name: Fetch bundled fonts
         run: bash ci/fetch_fonts.sh 2>&1 | tee ci-out/fonts.txt
+      - name: Fetch math models
+        run: bash ci/app_models.sh 2>&1 | tee ci-out/models.txt
       - name: Build APK (arm64)
         id: build
         run: |
@@ -98,6 +100,8 @@ jobs:
           gradle-version: '8.7'
       - name: Fetch bundled fonts
         run: bash ci/fetch_fonts.sh 2>&1 | tee ci-out/fonts.txt
+      - name: Fetch math models
+        run: bash ci/app_models.sh 2>&1 | tee ci-out/models.txt
       - name: Build app + test (x86_64)
         id: build
         run: |

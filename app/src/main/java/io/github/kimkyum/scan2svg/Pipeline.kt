@@ -16,13 +16,16 @@ object Pipeline {
     const val TAG = "scan2svg"
 
     /** 파이썬이 부르는 쪽: 진행 메시지 전달과 OCR. */
-    class Bridge(private val onLog: (String) -> Unit) {
+    class Bridge(private val ctx: Context, private val onLog: (String) -> Unit) {
         fun log(s: String) {
             Log.i(TAG, s)
             onLog(s)
         }
 
         fun ocr(path: String): String = Ocr.recognize(path)
+
+        /** 수식 모델 실행(math_ocr.DeviceRunner가 부른다) */
+        fun ort(request: String): String = Ort.run(ctx, request)
     }
 
     fun python(ctx: Context): Python {
@@ -78,7 +81,8 @@ object Pipeline {
         pageDir.mkdirs()
         JSONObject(
             python(ctx).getModule("android_main").callAttr(
-                "run_page", input.absolutePath, pageDir.absolutePath, fontDirs(ctx), cacheDir(ctx).absolutePath, Bridge(onLog),
+                "run_page", input.absolutePath, pageDir.absolutePath, fontDirs(ctx), cacheDir(ctx).absolutePath, Bridge(ctx, onLog),
+                if (Ort.available(ctx)) Ort.modelDir(ctx).absolutePath else "",
             ).toString()
         )
     } catch (e: Throwable) {

@@ -11,3 +11,6 @@ __pycache__/
 *.pyc
 app/src/main/assets/fonts/
 fonts-src/
+app/src/main/assets/models/
+models-src/
+models-src.log

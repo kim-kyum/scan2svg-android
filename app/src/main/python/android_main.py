@@ -30,7 +30,24 @@ class _DeviceOcr:
         return words, chars
 
 
-def run(image_path, out_dir, font_dirs, cache_dir, bridge):
+class _DeviceMath:
+    """수식 찾기·읽기를 앱의 ONNX Runtime으로(math_ocr.py의 전·후처리 + Kotlin Ort.kt의 실행)."""
+
+    def __init__(self, bridge, model_dir, cache_dir, font_dirs):
+        import math_ocr
+        runner = math_ocr.DeviceRunner(bridge, os.path.join(cache_dir, "ort"))
+        self.finder = math_ocr.MathFinder(runner)
+        self.reader = math_ocr.MathReader(runner, model_dir)
+        self.font = math_ocr.math_font(list(font_dirs) + [model_dir])
+
+    def find(self, bgr):
+        return self.finder.find(bgr)
+
+    def read(self, crop):
+        return self.reader.read(crop)
+
+
+def run(image_path, out_dir, font_dirs, cache_dir, bridge, model_dir=""):
     """사진 한 장을 변환한다. 결과 파일은 out_dir에: result.svg, result_preview.png, result_compare.jpg, result_report.json
     돌려주는 값은 JSON 문자열: {"ok": true, "stats": {...}} 또는 {"ok": false, "error": "...", "trace": "..."}"""
     try:
@@ -41,6 +58,12 @@ def run(image_path, out_dir, font_dirs, cache_dir, bridge):
         S.CACHE_DIR = cache_dir
         ocr = _DeviceOcr(bridge, cache_dir)
         S.OCR_BACKEND = ocr
+        S.MATH_BACKEND = None
+        if model_dir and os.path.exists(os.path.join(str(model_dir), "mfd.onnx")):
+            try:
+                S.MATH_BACKEND = _DeviceMath(bridge, str(model_dir), cache_dir, [str(d) for d in font_dirs])
+            except Exception as e:
+                bridge.log(f"    ! 수식 인식을 준비하지 못함({type(e).__name__}: {e})")
         stats = S.process(image_path, os.path.join(out_dir, "result.svg"),
                           font_dirs=[str(d) for d in font_dirs], max_side=2400)
         stats["ocr_calls"] = ocr.n
@@ -54,11 +77,11 @@ def _faces(font_dirs, cache_dir):
     return S.load_fonts([str(d) for d in font_dirs] + S.default_font_dirs())  # 변환 때와 같은 글꼴 색인 캐시
 
 
-def run_page(image_path, page_dir, font_dirs, cache_dir, bridge):
+def run_page(image_path, page_dir, font_dirs, cache_dir, bridge, model_dir=""):
     """문서함의 한 쪽을 변환한다. page_dir에 result.svg, result_scan.jpg(펴고 보정한 원본), page.pdf(화면 표시·내보내기용),
     result_report.json을 남긴다. 돌려주는 값은 run()과 같은 JSON."""
     import time
-    r = json.loads(run(image_path, page_dir, font_dirs, cache_dir, bridge))
+    r = json.loads(run(image_path, page_dir, font_dirs, cache_dir, bridge, model_dir))
     if not r.get("ok"):
         return json.dumps(r, ensure_ascii=False)
     try:
