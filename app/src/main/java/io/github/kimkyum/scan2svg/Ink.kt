@@ -3,8 +3,6 @@ package io.github.kimkyum.scan2svg
 import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import org.json.JSONArray
 import org.json.JSONObject
@@ -143,7 +141,6 @@ object Ink {
     private val line by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND }
     }
-    private val multiply by lazy { PorterDuffXfermode(PorterDuff.Mode.MULTIPLY) }
 
     /** 캔버스는 이미 쪽 좌표로 맞춰져 있어야 한다. */
     fun draw(c: Canvas, s: Stroke, highlight: Boolean = false) {
@@ -151,9 +148,7 @@ object Ink {
             line.color = s.color
             line.alpha = (s.alpha * 255).toInt().coerceIn(0, 255)
             line.strokeWidth = s.width
-            line.xfermode = multiply
-            c.drawPath(s.path, line)
-            line.xfermode = null
+            c.drawPath(s.path, line)  // (곱하기 혼합은 하드웨어 가속 화면에서 어둡게 나와 쓰지 않는다)
             line.alpha = 255
         } else {
             fill.color = s.color
