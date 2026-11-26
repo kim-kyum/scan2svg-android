@@ -2730,6 +2730,8 @@ def process(src, out_svg, lang="kor+eng", font_dirs=None, max_side=2400, do_rect
     heat = cv2.applyColorMap(np.clip(diff.astype(np.float32) * 2, 0, 255).astype(np.uint8), cv2.COLORMAP_INFERNO)
     cv2.imwrite(base + "_compare.jpg", np.hstack([flat, preview, heat]), [cv2.IMWRITE_JPEG_QUALITY, 85])
     cv2.imwrite(base + "_preview.png", preview)
+    cv2.imwrite(base + "_scan.jpg", flat, [cv2.IMWRITE_JPEG_QUALITY, 90])  # 펴고 보정한 원본(앱에서 확인·필기 배경용)
+    stats["page_px"] = [int(W), int(H)]
     with open(base + "_report.json", "w", encoding="utf-8") as f:
         json.dump(stats, f, ensure_ascii=False, indent=1)
     if debug_dir:

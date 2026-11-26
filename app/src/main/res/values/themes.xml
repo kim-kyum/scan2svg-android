@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Scan2svg" parent="Theme.Material3.DayNight" />
+    <!-- 화면은 코드로 짜고 안드로이드 기본 위젯만 쓴다(어두운 바탕). -->
+    <style name="Theme.Scan2svg" parent="android:Theme.Material.NoActionBar">
+        <item name="android:colorAccent">#D0BCFF</item>
+        <item name="android:colorPrimary">#211F26</item>
+        <item name="android:colorPrimaryDark">#141218</item>
+        <item name="android:windowBackground">#141218</item>
+        <item name="android:navigationBarColor">#141218</item>
+    </style>
 </resources>

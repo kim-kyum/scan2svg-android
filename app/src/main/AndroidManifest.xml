@@ -18,20 +18,28 @@
         android:theme="@style/Theme.Scan2svg">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".LibraryActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
+            android:launchMode="singleTop"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!-- 갤러리 등 다른 앱의 '공유'에서 사진 받기 -->
+            <!-- 갤러리 등 다른 앱의 '공유'에서 사진 받기(여러 장 가능) -->
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".DocActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize|uiMode"
+            android:exported="false"
+            android:hardwareAccelerated="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

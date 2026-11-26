@@ -47,6 +47,45 @@ def run(image_path, out_dir, font_dirs, cache_dir, bridge):
         return json.dumps(dict(ok=False, error=f"{type(e).__name__}: {e}", trace=traceback.format_exc()), ensure_ascii=False)
 
 
+def _faces(font_dirs, cache_dir):
+    S.CACHE_DIR = str(cache_dir)
+    return S.load_fonts([str(d) for d in font_dirs] + S.default_font_dirs())  # 변환 때와 같은 글꼴 색인 캐시
+
+
+def run_page(image_path, page_dir, font_dirs, cache_dir, bridge):
+    """문서함의 한 쪽을 변환한다. page_dir에 result.svg, result_scan.jpg(펴고 보정한 원본), page.pdf(화면 표시·내보내기용),
+    result_report.json을 남긴다. 돌려주는 값은 run()과 같은 JSON."""
+    import time
+    r = json.loads(run(image_path, page_dir, font_dirs, cache_dir, bridge))
+    if not r.get("ok"):
+        return json.dumps(r, ensure_ascii=False)
+    try:
+        import svg2pdf
+        t = time.time()
+        page_dir = str(page_dir)
+        info = svg2pdf.svg_to_pdf(os.path.join(page_dir, "result.svg"), os.path.join(page_dir, "page.pdf"),
+                                  _faces(font_dirs, cache_dir))
+        r["stats"]["pdf_sec"] = round(time.time() - t, 2)
+        r["stats"]["pdf"] = info
+        bridge.log(f"[7] PDF 쪽 만들기 ({r['stats']['pdf_sec']}s)")
+    except BaseException as e:
+        r["stats"]["pdf_error"] = f"{type(e).__name__}: {e}"
+        r["pdf_trace"] = traceback.format_exc()
+    return json.dumps(r, ensure_ascii=False, default=str)
+
+
+def export_pdf(spec_json, out_pdf, font_dirs, cache_dir):
+    """여러 쪽을 PDF 하나로 묶는다(필기 포함).
+    spec_json: {"title": "...", "pages": [{"svg": 경로, "ink": 경로|null, "scan": 경로|null}, ...]}"""
+    try:
+        import svg2pdf
+        spec = json.loads(str(spec_json))
+        info = svg2pdf.pages_to_pdf(spec["pages"], str(out_pdf), _faces(font_dirs, cache_dir), spec.get("title"))
+        return json.dumps(dict(ok=True, info=info), ensure_ascii=False)
+    except BaseException as e:
+        return json.dumps(dict(ok=False, error=f"{type(e).__name__}: {e}", trace=traceback.format_exc()), ensure_ascii=False)
+
+
 def versions():
     """앱 정보 화면·테스트용: 들어 있는 라이브러리 버전과 조판 방식."""
     import numpy
