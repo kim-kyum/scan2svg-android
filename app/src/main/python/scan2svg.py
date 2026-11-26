@@ -58,6 +58,7 @@ RAQM = features.check("raqm") and not os.environ.get("SCAN2SVG_BASIC_LAYOUT")
 
 
 # 다른 프로그램(안드로이드 앱 등)에 넣어 쓸 때 바꿔 끼우는 것들
+REREAD_BUDGET = 12.0  # 다시 읽기에 쓸 최대 시간(초)
 MATH_BACKEND = None  # 수식: find(bgr) -> [(x1,y1,x2,y2,점수,종류)], read(bgr 조각) -> LaTeX, font = 수식 글꼴 경로
 LOG_SINK = None     # 진행 메시지를 받을 함수(문자열 하나). 없으면 stderr로 찍는다
 CACHE_DIR = None    # 글꼴 색인 캐시를 둘 폴더. 없으면 ~/.cache/scan2svg
@@ -1990,7 +1991,9 @@ def rescue(fits, faces, lang, stats, good=0.93):
     hs = [f.H for f in fits if sc(f) >= 0.85]
     hmax = 2.5 * max(hs) if hs else 1e9  # 글자로 확인된 줄보다 훨씬 큰 덩어리는 그림일 가능성이 높다 → 다시 읽지 않는다
     weak = {id(f): bool(f.weak_cells(f.result)) for f in fits if sc(f) >= 0.78}
-    todo = [f for f in fits if (sc(f) < good or f.conf < 60 or weak.get(id(f))) and (f.text or (len(f.ids) >= 2 and f.H <= hmax))][:60]
+    todo = [f for f in fits if (sc(f) < good or f.conf < 60 or weak.get(id(f))) and (f.text or (len(f.ids) >= 2 and f.H <= hmax))]
+    # 시간 안에 끝내지 못할 수 있으니, 이미 글자로 거의 맞는 줄(고치면 바로 채택될 줄)부터
+    todo = sorted(todo, key=lambda f: -(sc(f) + (0.2 if f.text else 0)))[:40]
     stats.update(reread_lines=len(todo), reread_changed=0, chars_fixed=0)
     if not todo:
         return
@@ -2005,6 +2008,9 @@ def rescue(fits, faces, lang, stats, good=0.93):
         log(f"    ! 다시 읽기 실패({type(e).__name__})")
         return
     for f, vs in zip(todo, variants):
+        if time.time() - t0 > REREAD_BUDGET:  # 느린 기기에서 끝없이 붙들지 않게: 남은 줄은 첫 결과대로
+            stats["reread_cut"] = True
+            break
         cur, text0 = getattr(f, "result", None), f.text
         best = (sc(f), list(f.words), cur, f.conf)
         seen, cands = {f.text}, []

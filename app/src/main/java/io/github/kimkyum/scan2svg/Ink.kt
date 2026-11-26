@@ -139,11 +139,11 @@ object Ink {
         return path
     }
 
-    private val fill = Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL }
-    private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND
+    private val fill by lazy { Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.FILL } }
+    private val line by lazy {
+        Paint(Paint.ANTI_ALIAS_FLAG).apply { style = Paint.Style.STROKE; strokeCap = Paint.Cap.ROUND; strokeJoin = Paint.Join.ROUND }
     }
-    private val multiply = PorterDuffXfermode(PorterDuff.Mode.MULTIPLY)
+    private val multiply by lazy { PorterDuffXfermode(PorterDuff.Mode.MULTIPLY) }
 
     /** 캔버스는 이미 쪽 좌표로 맞춰져 있어야 한다. */
     fun draw(c: Canvas, s: Stroke, highlight: Boolean = false) {
@@ -270,12 +270,14 @@ object Ink {
             if (abs(Math.toDegrees(th.toDouble())) < 8) th = 0f
             if (abs(abs(Math.toDegrees(th.toDouble())) - 90) < 8) th = 0f
             val ct = cos(th); val st = sin(th)
-            var ra = 0f; var rb = 0f
+            // 반지름: 끝점 하나에 끌려가지 않게 평균 제곱으로(타원 위의 고른 점이면 cos² 평균이 1/2)
+            var su = 0f; var sv = 0f
             for (i in 0 until n) {
                 val u = (xs[i] - cx) * ct + (ys[i] - cy) * st
                 val v = -(xs[i] - cx) * st + (ys[i] - cy) * ct
-                ra = max(ra, abs(u)); rb = max(rb, abs(v))
+                su += u * u; sv += v * v
             }
+            var ra = sqrt(2 * su / n); var rb = sqrt(2 * sv / n)
             if (ra > 3 && rb > 3) {
                 var err = 0f
                 for (i in 0 until n) {
@@ -285,7 +287,7 @@ object Ink {
                 }
                 err /= n
                 val corners = corners(xs, ys, true, 0.06f * len)
-                if (err < 0.09f && corners.size !in 3..5 || err < 0.05f) {
+                if (err < 0.1f && corners.size !in 3..5 || err < 0.07f) {
                     if (abs(ra - rb) < 0.1f * max(ra, rb)) { val r = (ra + rb) / 2; ra = r; rb = r }
                     val m = 72
                     val q = FloatArray(2 * (m + 1))
